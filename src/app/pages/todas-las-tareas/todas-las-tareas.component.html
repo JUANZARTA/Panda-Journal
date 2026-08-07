@@ -1,0 +1,238 @@
+<div class="max-w-3xl mx-auto px-4 md:px-0 py-6 md:py-12">
+  <div class="text-center mb-6">
+    <p class="font-hand text-4xl md:text-5xl text-ink">Todas las tareas</p>
+    <p class="text-xs text-ink-faint mt-1">Cuaderno, otras tareas y perdidas, juntas — con filtros.</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="notebook-page rounded-lg shadow-page px-5 md:px-8 py-5 mb-4">
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button
+        (click)="mostrarCuaderno.set(!mostrarCuaderno())"
+        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
+        [class.bg-accent]="mostrarCuaderno()"
+        [class.text-white]="mostrarCuaderno()"
+        [class.border-accent]="mostrarCuaderno()"
+        [class.text-ink-faint]="!mostrarCuaderno()"
+        [class.border-paper-line]="!mostrarCuaderno()"
+      >
+        Cuaderno
+      </button>
+      <button
+        (click)="mostrarOtras.set(!mostrarOtras())"
+        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
+        [class.bg-accent]="mostrarOtras()"
+        [class.text-white]="mostrarOtras()"
+        [class.border-accent]="mostrarOtras()"
+        [class.text-ink-faint]="!mostrarOtras()"
+        [class.border-paper-line]="!mostrarOtras()"
+      >
+        Otras tareas
+      </button>
+      <button
+        (click)="mostrarPerdidas.set(!mostrarPerdidas())"
+        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
+        [class.bg-accent]="mostrarPerdidas()"
+        [class.text-white]="mostrarPerdidas()"
+        [class.border-accent]="mostrarPerdidas()"
+        [class.text-ink-faint]="!mostrarPerdidas()"
+        [class.border-paper-line]="!mostrarPerdidas()"
+      >
+        Perdidas
+      </button>
+
+      <span class="w-px h-5 bg-paper-line mx-1 self-center"></span>
+
+      <button
+        (click)="filtroEstado.set('todas')"
+        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
+        [class.bg-accent]="filtroEstado() === 'todas'"
+        [class.text-white]="filtroEstado() === 'todas'"
+        [class.border-accent]="filtroEstado() === 'todas'"
+        [class.text-ink-faint]="filtroEstado() !== 'todas'"
+        [class.border-paper-line]="filtroEstado() !== 'todas'"
+      >
+        Todas
+      </button>
+      <button
+        (click)="filtroEstado.set('completas')"
+        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
+        [class.bg-accent]="filtroEstado() === 'completas'"
+        [class.text-white]="filtroEstado() === 'completas'"
+        [class.border-accent]="filtroEstado() === 'completas'"
+        [class.text-ink-faint]="filtroEstado() !== 'completas'"
+        [class.border-paper-line]="filtroEstado() !== 'completas'"
+      >
+        Completas
+      </button>
+      <button
+        (click)="filtroEstado.set('incompletas')"
+        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
+        [class.bg-accent]="filtroEstado() === 'incompletas'"
+        [class.text-white]="filtroEstado() === 'incompletas'"
+        [class.border-accent]="filtroEstado() === 'incompletas'"
+        [class.text-ink-faint]="filtroEstado() !== 'incompletas'"
+        [class.border-paper-line]="filtroEstado() !== 'incompletas'"
+      >
+        Incompletas
+      </button>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3 text-sm text-ink-soft">
+      <button
+        (click)="abrirSelectorMes()"
+        class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-accent text-accent hover:bg-accent-soft/40 transition"
+      >
+        <span class="material-icons" style="font-size: 16px">calendar_month</span>
+        Cambiar mes
+      </button>
+      <span class="w-px h-5 bg-paper-line self-center"></span>
+      <label class="flex items-center gap-2">
+        Desde
+        <input
+          type="date"
+          [ngModel]="fechaDesde()"
+          (ngModelChange)="fechaDesde.set($event)"
+          class="bg-transparent border-b border-paper-line focus:border-accent focus:outline-none text-ink"
+        />
+      </label>
+      <label class="flex items-center gap-2">
+        Hasta
+        <input
+          type="date"
+          [ngModel]="fechaHasta()"
+          (ngModelChange)="fechaHasta.set($event)"
+          class="bg-transparent border-b border-paper-line focus:border-accent focus:outline-none text-ink"
+        />
+      </label>
+      <button
+        *ngIf="fechaDesde() || fechaHasta()"
+        (click)="fechaDesde.set(''); fechaHasta.set('')"
+        class="text-xs text-accent underline"
+      >
+        Limpiar fechas
+      </button>
+    </div>
+  </div>
+
+  <!-- Lista -->
+  <div class="notebook-page rounded-lg shadow-page px-5 md:px-8 py-5">
+    <div *ngFor="let fila of filas(); trackBy: trackByFila" class="flex items-start gap-3 py-2 border-b border-paper-line last:border-0 group">
+      <button
+        (click)="toggle(fila)"
+        class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
+        [ngClass]="fila.task.estado === 'realizado' ? 'bg-done border-done' : 'border-ink-faint'"
+      >
+        <span *ngIf="fila.task.estado === 'realizado'" class="material-icons text-white" style="font-size: 14px">
+          check
+        </span>
+      </button>
+
+      <div class="flex-1 min-w-0">
+        <span
+          class="break-words"
+          [class.line-through]="fila.task.estado === 'realizado'"
+          [class.text-ink-faint]="fila.task.estado === 'realizado'"
+          [class.text-ink]="fila.task.estado !== 'realizado'"
+        >
+          {{ fila.task.nombre }}
+        </span>
+        <div class="flex flex-wrap items-center gap-2 mt-0.5 text-xs text-ink-faint">
+          <span>{{ nombreCategoria(fila.task.categoriaId) }}</span>
+          <span>·</span>
+          <span
+            [class.text-accent]="fila.origen === 'cuaderno'"
+            [class.text-ink-faint]="fila.origen === 'otras'"
+            [class.text-overdue]="fila.origen === 'perdidas'"
+          >
+            {{ etiquetaOrigen(fila.origen) }}
+          </span>
+          <span *ngIf="fila.fecha">· {{ fila.fecha }}</span>
+        </div>
+      </div>
+
+      <ng-container *ngIf="reasignandoId !== trackByFila(0, fila); else eligiendoFecha">
+        <button
+          (click)="abrirReasignar(fila)"
+          class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+          title="Cambiar fecha"
+        >
+          <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
+        </button>
+        <button
+          (click)="eliminar(fila)"
+          class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+        >
+          <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
+        </button>
+      </ng-container>
+
+      <ng-template #eligiendoFecha>
+        <input
+          type="date"
+          [(ngModel)]="fechaNueva"
+          class="text-xs bg-transparent border-b border-accent focus:outline-none text-ink"
+        />
+        <button (click)="confirmarReasignar(fila)" class="p-1 shrink-0">
+          <span class="material-icons text-done" style="font-size: 16px">check</span>
+        </button>
+        <button (click)="cancelarReasignar()" class="p-1 shrink-0">
+          <span class="material-icons text-ink-faint" style="font-size: 16px">close</span>
+        </button>
+      </ng-template>
+    </div>
+
+    <div *ngIf="filas().length === 0" class="text-center text-ink-faint py-8 text-sm">
+      No hay tareas con estos filtros.
+    </div>
+  </div>
+
+  <!-- Progreso total (de lo filtrado) -->
+  <div *ngIf="filas().length > 0" class="mt-4 px-1">
+    <div class="flex items-center justify-between text-xs text-ink-faint mb-1">
+      <span>Progreso</span>
+      <span>{{ progreso() }}%</span>
+    </div>
+    <div class="h-1.5 rounded-full bg-paper-line overflow-hidden">
+      <div class="h-full bg-done rounded-full transition-all duration-500" [style.width.%]="progreso()"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Selector "Cambiar mes" (año → mes) -->
+<div *ngIf="mostrarSelectorMes" class="fixed inset-0 flex items-center justify-center bg-black/50 z-50 px-4">
+  <div class="notebook-page border border-paper-line rounded-lg shadow-page p-6 w-full max-w-sm max-h-[85vh] overflow-y-auto">
+    <h2 class="font-hand text-2xl text-ink text-center mb-4">
+      {{ !anioElegido ? 'Elegí un año' : 'Elegí un mes' }}
+    </h2>
+
+    <div *ngIf="!anioElegido" class="grid grid-cols-3 gap-2">
+      <button
+        *ngFor="let anio of anios"
+        (click)="elegirAnio(anio)"
+        class="py-2 rounded-lg border border-paper-line text-sm text-ink hover:border-accent hover:bg-accent-soft/40 transition"
+      >
+        {{ anio }}
+      </button>
+    </div>
+
+    <div *ngIf="anioElegido">
+      <button (click)="anioElegido = null" class="text-xs text-accent underline mb-3">
+        ← Cambiar año ({{ anioElegido }})
+      </button>
+      <div class="grid grid-cols-3 gap-2">
+        <button
+          *ngFor="let mes of meses; let i = index"
+          (click)="elegirMes(i)"
+          class="py-2 rounded-lg border border-paper-line text-sm text-ink hover:border-accent hover:bg-accent-soft/40 transition"
+        >
+          {{ mes }}
+        </button>
+      </div>
+    </div>
+
+    <button (click)="cerrarSelectorMes()" class="mt-5 w-full text-sm text-ink-faint hover:text-ink transition">
+      Cancelar
+    </button>
+  </div>
+</div>

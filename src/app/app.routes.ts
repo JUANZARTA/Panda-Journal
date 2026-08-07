@@ -20,7 +20,10 @@ export const routes: Routes = [
     loadComponent: () => import('./shared/components/layout/layout.component'),
     children: [
       { path: 'home', loadComponent: () => import('./pages/home/home.component') },
-      { path: 'category/:name', loadComponent: () => import('./pages/category/category.component').then(m => m.CategoryComponent) },
+      { path: 'categorias', loadComponent: () => import('./pages/categories/categories.component') },
+      { path: 'otras-tareas', loadComponent: () => import('./pages/otras-tareas/otras-tareas.component') },
+      { path: 'tareas-perdidas', loadComponent: () => import('./pages/tareas-perdidas/tareas-perdidas.component') },
+      { path: 'todas-las-tareas', loadComponent: () => import('./pages/todas-las-tareas/todas-las-tareas.component') },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },

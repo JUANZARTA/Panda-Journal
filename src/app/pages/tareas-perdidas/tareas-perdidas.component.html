@@ -1,0 +1,81 @@
+<div class="max-w-2xl mx-auto px-4 md:px-0 py-6 md:py-12">
+  <div class="text-center mb-6">
+    <p class="font-hand text-4xl md:text-5xl text-ink">Tareas perdidas</p>
+    <p class="text-xs text-ink-faint mt-1">Días que ya pasaron sin terminar — marcalas o movelas a un día nuevo.</p>
+  </div>
+
+  <div class="notebook-page rounded-lg shadow-page px-5 md:px-10 py-8">
+    <ng-container *ngIf="hayTareas(); else sinPerdidas">
+      <section *ngFor="let categoria of categorias(); trackBy: trackById" class="mb-8 last:mb-0">
+        <ng-container *ngIf="tareasDe(categoria.id).length > 0">
+          <h2 class="font-hand text-2xl text-accent mb-3">{{ categoria.nombre }}</h2>
+
+          <div
+            *ngFor="let task of tareasDe(categoria.id); trackBy: trackByTaskId"
+            class="flex items-start gap-3 py-1.5 group"
+          >
+            <button
+              (click)="toggleTask(task)"
+              class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
+              [ngClass]="task.estado === 'realizado' ? 'bg-done border-done' : 'border-overdue'"
+            >
+              <span *ngIf="task.estado === 'realizado'" class="material-icons text-white" style="font-size: 14px">
+                check
+              </span>
+            </button>
+
+            <div class="flex-1">
+              <span
+                class="break-words"
+                [class.line-through]="task.estado === 'realizado'"
+                [class.text-ink-faint]="task.estado === 'realizado'"
+                [class.text-ink]="task.estado !== 'realizado'"
+              >
+                {{ task.nombre }}
+              </span>
+              <span *ngIf="task.fechaOriginal" class="block text-xs text-overdue mt-0.5">
+                era del {{ task.fechaOriginal }}
+              </span>
+            </div>
+
+            <ng-container *ngIf="asignandoFechaId !== task.id; else eligiendoFecha">
+              <button
+                (click)="abrirAsignarFecha(task)"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+                title="Mover a otro día"
+              >
+                <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
+              </button>
+              <button
+                (click)="eliminarTarea(task)"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+              >
+                <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
+              </button>
+            </ng-container>
+
+            <ng-template #eligiendoFecha>
+              <input
+                type="date"
+                [(ngModel)]="fechaElegida"
+                class="text-xs bg-transparent border-b border-accent focus:outline-none text-ink"
+              />
+              <button (click)="confirmarAsignarFecha(task)" class="p-1 shrink-0">
+                <span class="material-icons text-done" style="font-size: 16px">check</span>
+              </button>
+              <button (click)="cancelarAsignarFecha()" class="p-1 shrink-0">
+                <span class="material-icons text-ink-faint" style="font-size: 16px">close</span>
+              </button>
+            </ng-template>
+          </div>
+        </ng-container>
+      </section>
+    </ng-container>
+
+    <ng-template #sinPerdidas>
+      <div class="text-center py-10">
+        <p class="text-ink-soft">Nada perdido por acá — al día 🎉</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

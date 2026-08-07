@@ -8,8 +8,6 @@ import {  FormBuilder,
 } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { DateService } from '../../services/date.service';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
 
 @Component({
   selector: 'app-login',
@@ -32,17 +30,21 @@ export class LoginComponent implements OnInit {
   welcomeName: string = '';
 
   constructor() {
+    // ⚠️ Valores por defecto SOLO para desarrollo (pediste agilizar el login local).
+    // Sacar esto antes de mandar a producción — si no, cualquiera que abra el form
+    // ve credenciales de prueba precargadas.
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      email: ['develop@gmail.com', [Validators.required, Validators.email]],
+      password: ['123456', [Validators.required, Validators.minLength(6)]],
     });
   }
 
 // Método para capturar el resultado del login con Google y redirigir si es nuevo login
 ngOnInit(): void {
-  firebase.auth().getRedirectResult()
-    .then((result: firebase.auth.UserCredential) => {
-      if (result && result.user) {
+  this.authService
+    .getRedirectResult()
+    .then((result) => {
+      if (result?.user) {
         this.welcomeName = result.user.displayName || 'Usuario';
         this.showSuccessModal = true;
 
@@ -51,7 +53,7 @@ ngOnInit(): void {
         }, 1000);
       }
     })
-    .catch((error: any) => {
+    .catch((error) => {
       console.error('Error en getRedirectResult:', error);
     });
 }
@@ -73,25 +75,6 @@ ngOnInit(): void {
           this.authService.getUserData(uid).subscribe((userData) => {
             const nombre = userData?.nombre || '';
             this.showWelcomeModal(nombre);
-
-            // ✅ Nuevas recomendaciones de ahorro
-            const recomendaciones = [
-              'Reservá al menos el 10% de tus ingresos como ahorro.',
-              'Evitá gastos pequeños repetitivos, pueden sumar mucho.',
-              'Asigná metas a tus ahorros: eso te motiva más.',
-            ];
-
-            this.authService.getUserNotifications(uid).subscribe((notifs) => {
-              const existentes = notifs
-                ? Object.values(notifs).map((n: any) => n.mensaje)
-                : [];
-
-              recomendaciones.forEach((msg) => {
-                if (!existentes.includes(msg)) {
-                  this.authService.addNotification(uid, msg).subscribe();
-                }
-              });
-            });
           });
         },
         error: (errorMsg) => {
@@ -114,7 +97,7 @@ ngOnInit(): void {
     this.welcomeName = nombre;
     this.showSuccessModal = true;
 
-    this.dateService.resetToCurrentDate();
+    this.dateService.goToToday();
 
     setTimeout(() => {
       this.showSuccessModal = false;

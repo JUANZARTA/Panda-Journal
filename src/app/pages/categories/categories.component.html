@@ -1,0 +1,69 @@
+<div class="max-w-2xl mx-auto px-5 py-8 md:py-12">
+  <h1 class="font-hand text-4xl text-ink mb-1">Categorías</h1>
+  <p class="text-sm text-ink-soft mb-8">Las secciones que van a aparecer en cada página de tu cuaderno.</p>
+
+  <div class="notebook-page rounded-lg shadow-page px-5 py-4">
+    <div
+      *ngFor="let categoria of categorias(); trackBy: trackById"
+      class="flex items-center gap-3 py-2.5 border-b border-paper-line last:border-0"
+    >
+      <ng-container *ngIf="editandoId !== categoria.id; else editando">
+        <span class="flex-1 text-ink">{{ categoria.nombre }}</span>
+        <button (click)="empezarEdicion(categoria)" class="p-1.5 rounded hover:bg-accent-soft/60 transition">
+          <span class="material-icons text-base text-ink-soft">edit</span>
+        </button>
+        <button
+          *ngIf="eliminandoId !== categoria.id"
+          (click)="pedirEliminar(categoria.id)"
+          class="p-1.5 rounded hover:bg-overdue/10 transition"
+        >
+          <span class="material-icons text-base text-overdue">delete</span>
+        </button>
+        <ng-container *ngIf="eliminandoId === categoria.id">
+          <span class="text-xs text-ink-soft">¿Eliminar?</span>
+          <button (click)="confirmarEliminar()" class="text-xs font-semibold text-overdue px-2 py-1">Sí</button>
+          <button (click)="cancelarEliminar()" class="text-xs text-ink-soft px-2 py-1">No</button>
+        </ng-container>
+      </ng-container>
+
+      <ng-template #editando>
+        <input
+          type="text"
+          [(ngModel)]="editandoNombre"
+          (keyup.enter)="guardarEdicion()"
+          (keyup.escape)="cancelarEdicion()"
+          class="flex-1 bg-transparent border-b border-accent text-ink focus:outline-none py-1"
+          autofocus
+        />
+        <button (click)="guardarEdicion()" class="p-1.5 rounded hover:bg-accent-soft/60 transition">
+          <span class="material-icons text-base text-done">check</span>
+        </button>
+        <button (click)="cancelarEdicion()" class="p-1.5 rounded hover:bg-accent-soft/60 transition">
+          <span class="material-icons text-base text-ink-soft">close</span>
+        </button>
+      </ng-template>
+    </div>
+
+    <div *ngIf="categorias().length === 0" class="text-center text-ink-faint py-6 text-sm">
+      Todavía no tenés categorías — agregá la primera abajo.
+    </div>
+
+    <!-- Alta rápida, inline -->
+    <div class="flex items-center gap-3 pt-4">
+      <span class="material-icons text-ink-faint">add</span>
+      <input
+        type="text"
+        [(ngModel)]="nuevoNombre"
+        (keyup.enter)="agregar()"
+        placeholder="Nueva categoría (ej: Universidad)"
+        class="flex-1 bg-transparent border-b border-paper-line focus:border-accent text-ink placeholder:text-ink-faint focus:outline-none py-1 transition"
+      />
+      <button
+        (click)="agregar()"
+        class="text-sm font-semibold text-accent px-3 py-1.5 rounded-lg hover:bg-accent-soft/60 transition"
+      >
+        Agregar
+      </button>
+    </div>
+  </div>
+</div>

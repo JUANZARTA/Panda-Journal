@@ -1,0 +1,91 @@
+<div class="max-w-2xl mx-auto px-4 md:px-0 py-6 md:py-12">
+  <div class="text-center mb-6">
+    <p class="font-hand text-4xl md:text-5xl text-ink">Otras tareas</p>
+    <p class="text-xs text-ink-faint mt-1">Sin fecha todavía — asignásela cuando sepas cuándo.</p>
+  </div>
+
+  <div class="notebook-page rounded-lg shadow-page px-5 md:px-10 py-8">
+    <ng-container *ngIf="categorias().length > 0; else sinCategorias">
+      <section *ngFor="let categoria of categorias(); trackBy: trackById" class="mb-8 last:mb-0">
+        <h2 class="font-hand text-2xl text-accent mb-3">{{ categoria.nombre }}</h2>
+
+        <div
+          *ngFor="let task of tareasDe(categoria.id); trackBy: trackByTaskId"
+          class="flex items-start gap-3 py-1.5 group"
+        >
+          <button
+            (click)="toggleTask(task)"
+            class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
+            [ngClass]="task.estado === 'realizado' ? 'bg-done border-done' : 'border-ink-faint'"
+          >
+            <span *ngIf="task.estado === 'realizado'" class="material-icons text-white" style="font-size: 14px">
+              check
+            </span>
+          </button>
+
+          <span
+            class="flex-1 break-words"
+            [class.line-through]="task.estado === 'realizado'"
+            [class.text-ink-faint]="task.estado === 'realizado'"
+            [class.text-ink]="task.estado !== 'realizado'"
+          >
+            {{ task.nombre }}
+          </span>
+
+          <ng-container *ngIf="asignandoFechaId !== task.id; else eligiendoFecha">
+            <button
+              (click)="abrirAsignarFecha(task)"
+              class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+              title="Asignar fecha"
+            >
+              <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">
+                event
+              </span>
+            </button>
+            <button
+              (click)="eliminarTarea(task)"
+              class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+            >
+              <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
+            </button>
+          </ng-container>
+
+          <ng-template #eligiendoFecha>
+            <input
+              type="date"
+              [(ngModel)]="fechaElegida"
+              class="text-xs bg-transparent border-b border-accent focus:outline-none text-ink"
+            />
+            <button (click)="confirmarAsignarFecha(task)" class="p-1 shrink-0">
+              <span class="material-icons text-done" style="font-size: 16px">check</span>
+            </button>
+            <button (click)="cancelarAsignarFecha()" class="p-1 shrink-0">
+              <span class="material-icons text-ink-faint" style="font-size: 16px">close</span>
+            </button>
+          </ng-template>
+        </div>
+
+        <!-- Alta rápida -->
+        <div class="flex items-center gap-3 py-1.5 mt-1">
+          <span class="w-5 h-5 flex items-center justify-center shrink-0">
+            <span class="material-icons text-ink-faint" style="font-size: 16px">add</span>
+          </span>
+          <input
+            type="text"
+            [(ngModel)]="nuevoTaskTexto[categoria.id]"
+            (keyup.enter)="agregarTarea(categoria.id)"
+            placeholder="Agregar tarea sin fecha…"
+            class="flex-1 bg-transparent placeholder:text-ink-faint text-ink focus:outline-none"
+          />
+        </div>
+      </section>
+    </ng-container>
+
+    <ng-template #sinCategorias>
+      <div class="text-center py-10">
+        <p class="text-ink-soft mb-3">Todavía no tenés categorías en tu cuaderno.</p>
+        <a routerLink="/app/categorias" class="text-accent font-semibold underline">Creá la primera</a>
+      </div>
+    </ng-template>
+  </div>
+</div>

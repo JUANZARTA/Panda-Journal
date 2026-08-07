@@ -1,0 +1,65 @@
+{
+  "rules": {
+    "$uid": {
+      ".read": "auth != null && auth.uid === $uid",
+      ".write": "auth != null && auth.uid === $uid",
+
+      "nombre": { ".validate": "newData.isString()" },
+      "correo": { ".validate": "newData.isString()" },
+
+      "notificaciones": {
+        "$notifId": {
+          "mensaje": { ".validate": "newData.isString()" },
+          "leido": { ".validate": "newData.isBoolean()" },
+          "fecha": { ".validate": "newData.isString()" }
+        }
+      },
+
+      "categorias": {
+        "$categoriaId": {
+          "nombre": { ".validate": "newData.isString()" },
+          "$other": { ".validate": false }
+        }
+      },
+
+      "tareas": {
+        "$fecha": {
+          "$taskId": {
+            "nombre": { ".validate": "newData.isString()" },
+            "nota": { ".validate": "newData.isString()" },
+            "categoriaId": { ".validate": "newData.isString()" },
+            "estado": {
+              ".validate": "newData.isString() && (newData.val() === 'pendiente' || newData.val() === 'realizado')"
+            },
+            "$other": { ".validate": false }
+          }
+        }
+      },
+
+      "tareas_sin_fecha": {
+        "$taskId": {
+          "nombre": { ".validate": "newData.isString()" },
+          "nota": { ".validate": "newData.isString()" },
+          "categoriaId": { ".validate": "newData.isString()" },
+          "estado": {
+            ".validate": "newData.isString() && (newData.val() === 'pendiente' || newData.val() === 'realizado')"
+          },
+          "$other": { ".validate": false }
+        }
+      },
+
+      "tareas_perdidas": {
+        "$taskId": {
+          "nombre": { ".validate": "newData.isString()" },
+          "nota": { ".validate": "newData.isString()" },
+          "categoriaId": { ".validate": "newData.isString()" },
+          "fechaOriginal": { ".validate": "newData.isString()" },
+          "estado": {
+            ".validate": "newData.isString() && (newData.val() === 'pendiente' || newData.val() === 'realizado')"
+          },
+          "$other": { ".validate": false }
+        }
+      }
+    }
+  }
+}

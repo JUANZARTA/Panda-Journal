@@ -1,5 +1,5 @@
 {
-  "name": "ng-menu-dashboard",
+  "name": "panda-journal",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -7,23 +7,21 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:ng-menu-dashboard": "node dist/ng-menu-dashboard/server/server.mjs"
+    "serve:ssr:panda-journal": "node dist/panda-journal/server/server.mjs"
   },
   "private": true,
   "dependencies": {
     "@angular/animations": "^18.0.0",
-    "@angular/cdk": "^18.2.14",
     "@angular/common": "^18.0.0",
     "@angular/compiler": "^18.0.0",
     "@angular/core": "^18.0.0",
+    "@angular/fire": "^18.0.1",
     "@angular/forms": "^18.0.0",
-    "@angular/material": "^18.2.14",
     "@angular/platform-browser": "^18.0.0",
     "@angular/platform-browser-dynamic": "^18.0.0",
     "@angular/platform-server": "^18.0.0",
     "@angular/router": "^18.0.0",
     "@angular/ssr": "^18.0.1",
-    "bootstrap": "^5.3.3",
     "chart.js": "^4.4.7",
     "date-fns": "^4.1.0",
     "express": "^4.18.2",
@@ -36,7 +34,6 @@
     "@angular-devkit/build-angular": "^18.0.1",
     "@angular/cli": "^18.0.1",
     "@angular/compiler-cli": "^18.0.0",
-    "@types/date-fns": "^2.5.3",
     "@types/express": "^4.17.17",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^18.18.0",

@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "misDeberes": {
+    "panda-journal": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,13 +13,13 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/misDeberes",
+            "outputPath": "dist/panda-journal",
             "index": "src/index.html",
             "main": "src/main.ts",
-            "baseHref": "/misDeberes/",
+            "baseHref": "/panda-journal/",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
-            "assets": ["src/favicon.ico", "src/assets"],
+            "assets": ["public", "src/assets"],
             "styles": ["src/styles.css"],
             "scripts": []
           },
@@ -38,7 +38,7 @@
                 }
               ],
               "outputHashing": "all",
-              "baseHref": "/misDeberes/"
+              "baseHref": "/panda-journal/"
             },
             "development": {
               "optimization": false,
@@ -52,10 +52,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "misDeberes:build:production"
+              "buildTarget": "panda-journal:build:production"
             },
             "development": {
-              "buildTarget": "misDeberes:build:development"
+              "buildTarget": "panda-journal:build:development"
             }
           },
           "defaultConfiguration": "development"

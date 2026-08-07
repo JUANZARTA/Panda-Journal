@@ -1,0 +1,99 @@
+<!-- Overlay, solo mobile, mientras el drawer está abierto -->
+<div
+  *ngIf="uiState.isDrawerOpen()"
+  class="fixed inset-0 bg-black/40 z-40 md:hidden"
+  (click)="uiState.closeDrawer()"
+></div>
+
+<aside
+  class="fixed inset-y-0 left-0 z-50 w-72 flex flex-col border-r border-paper-line bg-paper-raised
+         transform transition-transform duration-300 md:static md:translate-x-0 md:h-screen"
+  [ngClass]="uiState.isDrawerOpen() ? 'translate-x-0' : '-translate-x-full'"
+>
+  <!-- Marca -->
+  <div class="flex items-center gap-3 px-5 py-6">
+    <img src="assets/img/logo.png" alt="Panda Journal" class="h-10 w-10 rounded-lg object-cover" />
+    <div>
+      <p class="font-hand text-2xl leading-none text-ink">Panda Journal</p>
+      <p class="text-xs text-ink-faint">Tu cuaderno de tareas</p>
+    </div>
+  </div>
+
+  <!-- Navegación -->
+  <nav class="px-3 flex flex-col gap-1">
+    <a
+      routerLink="/app/home"
+      routerLinkActive="bg-accent-soft text-ink"
+      (click)="navigate('/app/home')"
+      class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+    >
+      <span class="material-icons text-lg">today</span>
+      Cuaderno de Tareas
+    </a>
+    <a
+      routerLink="/app/categorias"
+      routerLinkActive="bg-accent-soft text-ink"
+      (click)="navigate('/app/categorias')"
+      class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+    >
+      <span class="material-icons text-lg">folder</span>
+      Categorías
+    </a>
+    <a
+      routerLink="/app/otras-tareas"
+      routerLinkActive="bg-accent-soft text-ink"
+      (click)="navigate('/app/otras-tareas')"
+      class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+    >
+      <span class="material-icons text-lg">inbox</span>
+      Otras tareas
+    </a>
+    <a
+      routerLink="/app/todas-las-tareas"
+      routerLinkActive="bg-accent-soft text-ink"
+      (click)="navigate('/app/todas-las-tareas')"
+      class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+    >
+      <span class="material-icons text-lg">checklist</span>
+      Todas las tareas
+    </a>
+    <a
+      routerLink="/app/tareas-perdidas"
+      routerLinkActive="bg-accent-soft text-ink"
+      (click)="navigate('/app/tareas-perdidas')"
+      class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+    >
+      <span class="material-icons text-lg">history_toggle_off</span>
+      Tareas perdidas
+      <span *ngIf="lostCount() > 0" class="ml-auto bg-overdue text-white text-xs rounded-full px-2 py-0.5">
+        {{ lostCount() }}
+      </span>
+    </a>
+  </nav>
+
+  <div class="flex-1"></div>
+
+  <!-- Modo oscuro -->
+  <div class="px-3 mt-1">
+    <button
+      (click)="uiState.toggleDarkMode()"
+      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition"
+    >
+      <span class="material-icons text-lg">{{ uiState.isDarkMode() ? 'light_mode' : 'dark_mode' }}</span>
+      {{ uiState.isDarkMode() ? 'Modo claro' : 'Modo oscuro' }}
+    </button>
+  </div>
+
+  <!-- Salir -->
+  <div class="px-3 pb-4 mt-1">
+    <button
+      (click)="logout()"
+      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-overdue hover:bg-overdue/10 transition"
+    >
+      <span class="material-icons text-lg">logout</span>
+      Salir
+    </button>
+  </div>
+
+  <p class="px-5 pb-4 text-xs text-ink-faint">© 2025 Golden Panda</p>
+</aside>

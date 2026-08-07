@@ -1,175 +1,108 @@
-// Servicio para obtener, agregar, editar y eliminar tareas
-import { Injectable } from '@angular/core';
-import { AuthService } from './auth.service';
-import { DateService } from './date.service';
-import { HttpClient } from '@angular/common/http';
-import { map, catchError } from 'rxjs/operators';
-import { Observable, of, throwError } from 'rxjs';
-import { Task } from '../models/task.model'; // Asegúrate de crear este archivo
-import { format } from 'date-fns';
+// Orquesta el TaskRepository para el día seleccionado (DateService), la
+// bandeja de tareas sin fecha ("Otras tareas") y la de tareas perdidas.
+import { Injectable, inject } from '@angular/core';
+import { Observable, switchMap } from 'rxjs';
+import { TaskRepository } from '../data-access/repositories/task.repository';
+import { DateService, formatDate } from './date.service';
+import { Task, TaskConFecha, TaskInput } from '../models/task.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class TaskService {
-  // URL base de Firebase
-  private dbUrl = 'https://misdeberes-fac01-default-rtdb.firebaseio.com';
+  private repo = inject(TaskRepository);
+  private dateService = inject(DateService);
 
-  constructor(
-    private authService: AuthService,
-    private dateService: DateService,
-    private http: HttpClient
-  ) {}
-
-  // Retorna el path absoluto del tipo de tarea actual
-  private getPath(taskType: string): string | null {
-    const user = this.authService.getUser();
-    const year = this.dateService.getSelectedYear();
-    const month = this.dateService.getSelectedMonth();
-    if (!user?.id || !year || !month) return null;
-    return `${this.dbUrl}/${user.id}/${year}/${month}/categorias/${taskType}/tareas`;
+  /** Tareas del día actualmente seleccionado — stream en vivo. */
+  watchSelectedDayTasks(): Observable<Task[]> {
+    return this.dateService.selectedDate$.pipe(switchMap((fecha) => this.repo.watchByDate(fecha)));
   }
 
-  // Consulta todas las tareas de un tipo de tarea
-  getTasks(taskType: string): Observable<any[]> {
-    const path = this.getPath(taskType);
-    if (!path) return of([]);
-
-    return this.http.get<{ [key: string]: any }>(`${path}.json`).pipe(
-      map((res) => {
-        return res
-          ? Object.keys(res).map((key) => ({
-              ...res[key],
-              nombre: res[key].nombre || key, // ✅ usa el nombre limpio si existe
-            }))
-          : [];
-      }),
-      catchError((err) => {
-        console.error('[ERROR][GET TASKS]', err);
-        return of([]);
-      })
-    );
+  addTask(input: TaskInput): Observable<string> {
+    return this.repo.create(this.dateService.getSelectedDate(), { ...input, nombre: input.nombre.trim() });
   }
 
-  // Agrega una nueva tarea a la base de datos
-  addTask(taskType: string, tarea: any): Observable<any> {
-    const path = this.getPath(taskType);
-    if (!path || !tarea?.nombre)
-      return throwError(() => new Error('Datos inválidos'));
+  updateTask(taskId: string, changes: Partial<TaskInput>): Observable<void> {
+    return this.repo.update(this.dateService.getSelectedDate(), taskId, changes);
+  }
 
-    const nombreKey = tarea.nombre.trim().toLowerCase().replace(/\s+/g, '_');
-    const url = `${path}.json`;
+  removeTask(taskId: string): Observable<void> {
+    return this.repo.remove(this.dateService.getSelectedDate(), taskId);
+  }
 
-    const tareaConNombreOriginal = {
-      ...tarea,
-      nombre: tarea.nombre.trim(), // 👈 nombre limpio para mostrar
-    };
+  toggleEstado(task: Task): Observable<void> {
+    return this.updateTask(task.id, { estado: task.estado === 'realizado' ? 'pendiente' : 'realizado' });
+  }
 
-    return this.http.patch(url, {
-      [nombreKey]: tareaConNombreOriginal,
+  // -------- "Todas las tareas" --------
+  // Estos reciben la fecha explícita: acá se muestran tareas de muchos días a la
+  // vez, no se puede asumir "el día seleccionado en el Home" como en los métodos
+  // de arriba.
+
+  watchAllDatedTasks(): Observable<TaskConFecha[]> {
+    return this.repo.watchAllDated();
+  }
+
+  toggleEstadoOnDate(task: Task, fecha: string): Observable<void> {
+    return this.repo.update(fecha, task.id, {
+      estado: task.estado === 'realizado' ? 'pendiente' : 'realizado',
     });
   }
 
-  // Elimina una tarea específica de una categoría
-  deleteTask(taskType: string, taskKey: string): Observable<any> {
-    const path = this.getPath(taskType);
-    if (!path || !taskKey)
-      return throwError(() => new Error('Datos inválidos'));
-
-    const url = `${path}/${taskKey}.json`;
-    return this.http.delete(url);
+  removeTaskOnDate(fecha: string, taskId: string): Observable<void> {
+    return this.repo.remove(fecha, taskId);
   }
 
-  // Actualiza una tarea sobrescribiéndola completamente
-  updateTask(taskType: string, taskKey: string, tarea: any): Observable<any> {
-    const path = this.getPath(taskType);
-    if (!path || !taskKey || !tarea)
-      return throwError(() => new Error('Datos inválidos'));
-
-    const url = `${path}/${taskKey}.json`;
-    return this.http.put(url, tarea);
+  moveTaskToDate(task: Task, fechaActual: string, fechaNueva: string): Observable<void> {
+    return this.repo.moveToDate(task, fechaActual, fechaNueva);
   }
 
-  // Actualiza el estado de una tarea específica
-  getTodayTasks(): Observable<Task[]> {
-    const user = this.authService.getUser();
-    const year = this.dateService.getSelectedYear();
-    const month = this.dateService.getSelectedMonth();
-    const today = format(new Date(), 'yyyy-MM-dd');
+  // -------- "Otras tareas" (sin fecha) --------
 
-    if (!user?.id || !year || !month) return of([]);
-
-    const url = `${this.dbUrl}/${user.id}/${year}/${month}/categorias.json`;
-
-    return this.http.get<{ [key: string]: any }>(url).pipe(
-      map((categorias) => {
-        const tareasHoy: Task[] = [];
-
-        if (!categorias) return [];
-
-        Object.entries(categorias).forEach(([tipo, categoria]: [string, any]) => {
-          if (categoria?.tareas) {
-            Object.entries(categoria.tareas).forEach(([nombre, tarea]: [string, any]) => {
-              if (tarea.fecha === today) {
-                tareasHoy.push({
-                  nombre: tarea.nombre || nombre,
-                  nota: tarea.nota || '',
-                  fecha: tarea.fecha,
-                  estado: tarea.estado || 'pendiente',
-                  tipo: tipo // ✅ agregamos el tipo aquí
-                } as Task);
-              }
-            });
-          }
-        });
-
-        return tareasHoy;
-      }),
-      catchError((err) => {
-        console.error('[ERROR][GET TODAY TASKS]', err);
-        return of([]);
-      })
-    );
+  watchUndatedTasks(): Observable<Task[]> {
+    return this.repo.watchUndated();
   }
 
-  // Actualiza el estado de una tarea específica
-  getAllTasks(): Observable<Task[]> {
-    const user = this.authService.getUser();
-    const year = this.dateService.getSelectedYear();
-    const month = this.dateService.getSelectedMonth();
-
-    if (!user?.id || !year || !month) return of([]);
-
-    const url = `${this.dbUrl}/${user.id}/${year}/${month}/categorias.json`;
-
-    return this.http.get<{ [key: string]: any }>(url).pipe(
-      map((categorias) => {
-        const todasLasTareas: Task[] = [];
-
-        if (!categorias) return [];
-
-        Object.entries(categorias).forEach(([tipo, categoria]: [string, any]) => {
-          if (categoria?.tareas) {
-            Object.entries(categoria.tareas).forEach(([nombre, tarea]: [string, any]) => {
-              todasLasTareas.push({
-                nombre: tarea.nombre || nombre,
-                nota: tarea.nota || '',
-                fecha: tarea.fecha || '',
-                estado: tarea.estado || 'pendiente',
-                tipo: tipo // ✅ importante para categorizar luego
-              } as Task);
-            });
-          }
-        });
-
-        return todasLasTareas;
-      }),
-      catchError((err) => {
-        console.error('[ERROR][GET ALL TASKS]', err);
-        return of([]);
-      })
-    );
+  addUndatedTask(input: TaskInput): Observable<string> {
+    return this.repo.createUndated({ ...input, nombre: input.nombre.trim() });
   }
 
+  removeUndatedTask(taskId: string): Observable<void> {
+    return this.repo.removeUndated(taskId);
+  }
 
+  toggleUndatedEstado(task: Task): Observable<void> {
+    return this.repo.updateUndated(task.id, {
+      estado: task.estado === 'realizado' ? 'pendiente' : 'realizado',
+    });
+  }
+
+  /** Le pone fecha a una tarea de "Otras tareas" — se muda a la página de ese día. */
+  assignDate(task: Task, fecha: string): Observable<void> {
+    return this.repo.assignDate(task, fecha);
+  }
+
+  // -------- Tareas perdidas --------
+
+  watchLostTasks(): Observable<Task[]> {
+    return this.repo.watchLost();
+  }
+
+  removeLostTask(taskId: string): Observable<void> {
+    return this.repo.removeLost(taskId);
+  }
+
+  toggleLostEstado(task: Task): Observable<void> {
+    return this.repo.updateLost(task.id, {
+      estado: task.estado === 'realizado' ? 'pendiente' : 'realizado',
+    });
+  }
+
+  /** Reasigna una tarea perdida a una fecha nueva — vuelve a la página de ese día. */
+  reassignLost(task: Task, fecha: string): Observable<void> {
+    return this.repo.reassignLost(task, fecha);
+  }
+
+  /** Se llama una vez al abrir la app (ver LayoutComponent) — migra lo vencido a "Tareas perdidas". */
+  migratePastDueTasks(): Observable<void> {
+    return this.repo.migratePastDue(formatDate(new Date()));
+  }
 }

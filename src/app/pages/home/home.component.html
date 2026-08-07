@@ -1,128 +1,121 @@
-<!-- Vista de tipos de tarea -->
-<div class="p-6 w-full">
-  <div class="flex flex-wrap gap-4">
+<div class="max-w-2xl mx-auto px-4 md:px-0 py-6 md:py-12">
+  <!-- Encabezado de la página -->
+  <div class="text-center mb-6">
+    <p class="font-hand text-4xl md:text-5xl text-ink capitalize">{{ fechaLegible() }}</p>
+    <button
+      *ngIf="!esHoy()"
+      (click)="irHoy()"
+      class="mt-2 inline-flex items-center gap-2 bg-accent text-white text-sm font-semibold px-4 py-2 rounded-full shadow-page hover:opacity-90 transition"
+    >
+      <span class="material-icons" style="font-size: 18px">today</span>
+      Volver a hoy
+    </button>
+  </div>
 
-    <!-- Tarjetas de tipos de tarea -->
-    <div *ngFor="let taskType of taskTypes"
-      class="bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600 p-4 w-60 h-[150px] flex flex-col justify-between items-center transition-transform hover:-translate-y-1 hover:shadow-md">
-      <h3 class="text-lg font-semibold text-gray-800 dark:text-white">{{ taskType.nombre }}</h3>
-      <div class="flex items-center justify-between w-full gap-2">
-        <button
-          class="bg-sky-600 text-white py-1 px-3 rounded hover:bg-sky-800 transition flex-1 flex items-center justify-center gap-1"
-          (click)="enterTaskType(taskType)"> INGRESAR
-        </button>
-        <button (click)="openEditModal(taskType)" class="hover:bg-sky-100 p-2 rounded-full transition">
-          <span class="material-icons text-sky-600 dark:text-sky-400">edit</span>
-        </button>
-        <button (click)="openDeleteModal(taskType)" class="hover:bg-red-100 p-2 rounded-full transition">
-          <span class="material-icons text-orange-600 dark:text-red-400">delete</span>
-        </button>
+  <!-- La hoja del día -->
+  <div
+    class="notebook-page rounded-lg shadow-page px-5 md:px-10 py-8"
+    [ngClass]="pageAnimClass()"
+    (animationend)="pageAnimClass.set('')"
+  >
+    <ng-container *ngIf="categorias().length > 0; else sinCategorias">
+      <section *ngFor="let categoria of categorias(); trackBy: trackById" class="mb-8 last:mb-0">
+        <h2 class="font-hand text-2xl text-accent mb-3">{{ categoria.nombre }}</h2>
+
+        <div
+          *ngFor="let task of tareasDe(categoria.id); trackBy: trackByTaskId"
+          class="flex items-start gap-3 py-1.5 group"
+        >
+          <button
+            (click)="toggleTask(task)"
+            class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
+            [ngClass]="task.estado === 'realizado' ? 'bg-done border-done' : 'border-ink-faint'"
+          >
+            <span *ngIf="task.estado === 'realizado'" class="material-icons text-white" style="font-size: 14px">
+              check
+            </span>
+          </button>
+
+          <ng-container *ngIf="editandoTaskId !== task.id; else editandoTask">
+            <span
+              (click)="empezarEdicionTask(task)"
+              class="flex-1 cursor-text break-words"
+              [class.line-through]="task.estado === 'realizado'"
+              [class.text-ink-faint]="task.estado === 'realizado'"
+              [class.text-ink]="task.estado !== 'realizado'"
+            >
+              {{ task.nombre }}
+            </span>
+            <button
+              (click)="eliminarTarea(task)"
+              class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+            >
+              <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
+            </button>
+          </ng-container>
+
+          <ng-template #editandoTask>
+            <input
+              type="text"
+              [(ngModel)]="editandoTaskNombre"
+              (keyup.enter)="guardarEdicionTask(task)"
+              (keyup.escape)="cancelarEdicionTask()"
+              (blur)="guardarEdicionTask(task)"
+              class="flex-1 bg-transparent border-b border-accent focus:outline-none text-ink"
+            />
+          </ng-template>
+        </div>
+
+        <!-- Alta rápida -->
+        <div class="flex items-center gap-3 py-1.5 mt-1">
+          <span class="w-5 h-5 flex items-center justify-center shrink-0">
+            <span class="material-icons text-ink-faint" style="font-size: 16px">add</span>
+          </span>
+          <input
+            type="text"
+            [(ngModel)]="nuevoTaskTexto[categoria.id]"
+            (keyup.enter)="agregarTarea(categoria.id)"
+            placeholder="Agregar tarea…"
+            class="flex-1 bg-transparent placeholder:text-ink-faint text-ink focus:outline-none"
+          />
+        </div>
+      </section>
+    </ng-container>
+
+    <ng-template #sinCategorias>
+      <div class="text-center py-10">
+        <p class="text-ink-soft mb-3">Todavía no tenés categorías en tu cuaderno.</p>
+        <a routerLink="/app/categorias" class="text-accent font-semibold underline">Creá la primera</a>
       </div>
-    </div>
-
-    <!-- Botón para agregar nuevo tipo de tarea -->
-    <div
-      class="bg-sky-600 hover:bg-sky-800 text-white w-64 h-[150px] rounded-lg flex items-center justify-center cursor-pointer text-4xl shadow-md transition-transform hover:-translate-y-1"
-      (click)="openModal()">
-      +
-    </div>
-
+    </ng-template>
   </div>
-</div>
 
-<!-- Tarjeta principal -->
-<div
-  class="bg-white dark:bg-slate-700 rounded-xl shadow border border-gray-200 dark:border-gray-600 p-6 mt-6 mx-auto max-w-4xl">
-  <h2 class="text-xl font-bold text-sky-800 dark:text-white mb-4">Resumen de Tareas</h2>
-
-  <div *ngIf="todayTasks.length > 0" class="space-y-4">
-    <div *ngFor="let task of todayTasks"
-      class="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 dark:bg-slate-600 p-4 rounded-lg shadow-sm">
-      <div>
-        <p class="text-base font-bold text-sky-800 dark:text-white">
-          {{ todayTaskOrigins.get(task.nombre) || '-' }}
-        </p>
-        <p class="font-semibold text-sky-800 dark:text-white">{{ task.nombre }}</p>
-        <p class="text-sm text-gray-600 dark:text-gray-300">
-          <strong>Nota:</strong> {{ task.nota || '-' }}
-        </p>
-      </div>
-      <div class="mt-3 sm:mt-0 sm:ml-4">
-        <select [(ngModel)]="task.estado" (change)="changeTodayTaskStatus(task)"
-          class="text-sm font-semibold px-3 py-2 rounded-md shadow-sm border w-full sm:w-auto"
-          [ngClass]="getEstadoColor(task)">
-          <option class="text-black bg-slate-100" value="pendiente">Pendiente</option>
-          <option class="text-black bg-slate-100" value="realizado">Realizado</option>
-          <option class="text-black bg-slate-100" value="no realizado">No realizado</option>
-          <option class="text-black bg-slate-100" value="para hoy">Para hoy</option>
-        </select>
-      </div>
+  <!-- Progreso del día -->
+  <div *ngIf="hayTareasHoy()" class="mt-4 px-1">
+    <div class="h-1.5 rounded-full bg-paper-line overflow-hidden">
+      <div
+        class="h-full bg-done rounded-full transition-all duration-500"
+        [style.width.%]="progresoDia()"
+      ></div>
     </div>
   </div>
 
-  <div *ngIf="todayTasks.length === 0" class="text-center text-gray-500 py-6">
-    No hay tareas programadas para hoy.
-  </div>
-</div>
-
-<!-- Modal para nuevo tipo de tarea -->
-<div *ngIf="isModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-40">
-  <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg w-96">
-    <h2 class="text-xl font-bold text-sky-700 dark:text-white mb-4">Nuevo Tipo de Tarea</h2>
-    <label class="block mb-2 text-sm text-gray-700 dark:text-gray-200">Nombre:</label>
-    <input type="text" [(ngModel)]="newTaskType"
-      class="w-full p-2 border rounded mb-4 bg-white dark:bg-slate-700 dark:text-white dark:border-slate-600" />
-    <div class="flex justify-end gap-2">
-      <button (click)="closeModal()" class="px-4 py-2 border rounded-md hover:bg-slate-100 dark:hover:bg-slate-600">
-        Cancelar
-      </button>
-      <button (click)="addTaskType()" class="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700">
-        Agregar
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal para editar tipo de tarea -->
-<div *ngIf="isEditModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-  <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg w-96">
-    <h2 class="text-xl font-bold text-sky-700 dark:text-white mb-4">Editar Tipo de Tarea</h2>
-    <p class="text-gray-600 dark:text-gray-300 mb-4 text-sm">Modifica el nombre del tipo de tarea.</p>
-
-    <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Nuevo Nombre:</label>
-    <input type="text" [(ngModel)]="editedTaskType" placeholder="Ej: Universidad"
-      class="w-full p-2 border rounded-md mb-4 bg-white dark:bg-slate-700 dark:text-white dark:border-slate-600" />
-
-    <div class="flex justify-end gap-2">
-      <button (click)="closeEditModal()"
-        class="px-4 py-2 border rounded-md bg-white hover:bg-slate-100 dark:bg-slate-700 dark:text-white dark:border-slate-600 dark:hover:bg-slate-600">
-        Cancelar
-      </button>
-      <button (click)="saveTaskTypeEdit()" class="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700">
-        Guardar
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal para eliminar tipo de tarea -->
-<div *ngIf="isDeleteModalOpen" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-  <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg w-80 text-center">
-    <span class="material-icons text-red-600 dark:text-red-400 mx-auto mb-4" style="font-size: 48px;">
-      report_problem
-    </span>
-    <h2 class="text-xl font-bold text-red-700 dark:text-white mt-4 mb-2">¿Eliminar Tipo de Tarea?</h2>
-    <p class="mb-6 text-gray-700 dark:text-gray-300 text-sm">
-      ¿Estás seguro de eliminar este tipo de tarea? Esta acción no se puede deshacer.
-    </p>
-    <div class="flex justify-center gap-2">
-      <button (click)="closeDeleteModal()"
-        class="px-4 py-2 border rounded-md hover:bg-orange-100 dark:hover:bg-slate-600">
-        Cancelar
-      </button>
-      <button (click)="confirmDeleteTaskType()" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-red-600">
-        Eliminar
-      </button>
-    </div>
+  <!-- Navegación de días, al pie de la página -->
+  <div class="flex items-center justify-center gap-6 mt-8">
+    <button
+      (click)="irDiaAnterior()"
+      class="p-2 rounded-full hover:bg-accent-soft/60 transition"
+      aria-label="Día anterior"
+    >
+      <span class="material-icons text-ink">chevron_left</span>
+    </button>
+    <span class="text-sm text-ink-faint">{{ selectedDate() }}</span>
+    <button
+      (click)="irDiaSiguiente()"
+      class="p-2 rounded-full hover:bg-accent-soft/60 transition"
+      aria-label="Día siguiente"
+    >
+      <span class="material-icons text-ink">chevron_right</span>
+    </button>
   </div>
 </div>

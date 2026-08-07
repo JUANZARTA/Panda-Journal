@@ -1,101 +1,97 @@
-<div class="flex justify-center items-center h-screen w-screen bg-gradient-to-r from-cyan-800 to-green-600">
-  <div class="bg-white p-10 rounded-lg shadow-lg w-full max-w-md">
+<div class="notebook-page min-h-screen w-screen flex justify-center items-center px-4">
+  <div class="bg-paper-raised border border-paper-line rounded-lg shadow-page p-8 md:p-10 w-full max-w-md">
 
-    <h2 class="text-center text-3xl font-bold text-gray-700 mb-6">Crear Cuenta</h2>
+    <div class="flex flex-col items-center mb-6">
+      <img src="assets/img/logo.png" alt="Panda Journal" class="h-16 w-16 object-contain mb-3" />
+      <p class="font-hand text-3xl text-ink">Panda Journal</p>
+      <p class="text-xs text-ink-faint">Tu cuaderno de tareas</p>
+    </div>
+
+    <h2 class="text-center text-lg font-semibold text-ink mb-6">Crear cuenta</h2>
 
     <!-- Formulario de Registro -->
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
 
       <!-- Nombre -->
-      <div class="mb-6">
-        <label for="name" class="block text-gray-600 text-sm font-semibold">Nombre</label>
+      <div class="mb-5">
+        <label for="name" class="block text-ink-soft text-sm font-medium mb-1.5">Nombre</label>
         <input type="text" id="name" formControlName="name"
-          class="w-full px-4 py-3 mt-2 border rounded-lg focus:ring focus:ring-green-300"
-          [ngClass]="{'border-red-500': isInvalid('name')}">
-        <p *ngIf="isInvalid('name')" class="text-red-500 text-xs mt-1">Debe tener al menos 3 caracteres.</p>
+          class="w-full px-3 py-2.5 bg-paper border border-paper-line rounded-lg text-ink focus:outline-none focus:border-accent transition"
+          [ngClass]="{'border-overdue': isInvalid('name')}">
+        <p *ngIf="isInvalid('name')" class="text-overdue text-xs mt-1">Debe tener al menos 3 caracteres.</p>
       </div>
 
       <!-- Email -->
-      <div class="mb-6">
-        <label for="email" class="block text-gray-600 text-sm font-semibold">Correo Electrónico</label>
+      <div class="mb-5">
+        <label for="email" class="block text-ink-soft text-sm font-medium mb-1.5">Correo electrónico</label>
         <input type="email" id="email" formControlName="email"
-          class="w-full px-4 py-3 mt-2 border rounded-lg focus:ring focus:ring-green-300"
-          [ngClass]="{'border-red-500': isInvalid('email')}">
-        <p *ngIf="isInvalid('email')" class="text-red-500 text-xs mt-1">Correo inválido.</p>
+          class="w-full px-3 py-2.5 bg-paper border border-paper-line rounded-lg text-ink focus:outline-none focus:border-accent transition"
+          [ngClass]="{'border-overdue': isInvalid('email')}">
+        <p *ngIf="isInvalid('email')" class="text-overdue text-xs mt-1">Correo inválido.</p>
       </div>
 
       <!-- Contraseña -->
-      <div class="mb-6">
-        <label for="password" class="block text-gray-600 text-sm font-semibold">Contraseña</label>
+      <div class="mb-5">
+        <label for="password" class="block text-ink-soft text-sm font-medium mb-1.5">Contraseña</label>
         <input type="password" id="password" formControlName="password"
-          class="w-full px-4 py-3 mt-2 border rounded-lg focus:ring focus:ring-green-300"
-          [ngClass]="{'border-red-500': isInvalid('password')}">
-        <p *ngIf="isInvalid('password')" class="text-red-500 text-xs mt-1">Debe tener al menos 6 caracteres.</p>
+          class="w-full px-3 py-2.5 bg-paper border border-paper-line rounded-lg text-ink focus:outline-none focus:border-accent transition"
+          [ngClass]="{'border-overdue': isInvalid('password')}">
+        <p *ngIf="isInvalid('password')" class="text-overdue text-xs mt-1">Debe tener al menos 6 caracteres.</p>
       </div>
 
       <!-- Confirmar Contraseña -->
       <div class="mb-6">
-        <label for="confirmPassword" class="block text-gray-600 text-sm font-semibold">Confirmar Contraseña</label>
+        <label for="confirmPassword" class="block text-ink-soft text-sm font-medium mb-1.5">Confirmar contraseña</label>
         <input type="password" id="confirmPassword" formControlName="confirmPassword"
-          class="w-full px-4 py-3 mt-2 border rounded-lg focus:ring focus:ring-green-300"
-          [ngClass]="{'border-red-500': isInvalid('confirmPassword') || registerForm.hasError('mismatch')}">
-        <p *ngIf="registerForm.hasError('mismatch')" class="text-red-500 text-xs mt-1">Las contraseñas no coinciden.</p>
+          class="w-full px-3 py-2.5 bg-paper border border-paper-line rounded-lg text-ink focus:outline-none focus:border-accent transition"
+          [ngClass]="{'border-overdue': isInvalid('confirmPassword') || registerForm.hasError('mismatch')}">
+        <p *ngIf="registerForm.hasError('mismatch')" class="text-overdue text-xs mt-1">Las contraseñas no coinciden.</p>
       </div>
 
       <!-- Botón de Registro -->
       <button type="submit" [disabled]="registerForm.invalid"
-        class="w-full bg-green-600 text-white py-3 rounded-lg shadow-md hover:bg-green-700 transition disabled:opacity-50">
-        Registrarse
+        class="w-full bg-accent text-white py-2.5 rounded-lg font-semibold shadow-sm hover:opacity-90 transition disabled:opacity-40">
+        Registrarme
       </button>
 
       <!-- Enlace a Iniciar Sesión -->
-      <p class="text-center text-sm text-gray-500mt-6">
-        ¿Ya tienes cuenta?
-        <a routerLink="/login" class="text-blue-500 font-semibold hover:underline">Inicia sesión</a>
+      <p class="text-center text-sm text-ink-faint mt-6">
+        ¿Ya tenés cuenta?
+        <a routerLink="/login" class="text-accent font-semibold hover:underline">Iniciá sesión</a>
       </p>
 
     </form>
 
   </div>
 
-  <!-- ❌ MODAL DE ERROR -->
-  <div *ngIf="showModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full relative">
+  <!-- MODAL DE ERROR -->
+  <div *ngIf="showModal" class="fixed inset-0 flex items-center justify-center bg-black/50 z-50 px-4">
+    <div class="notebook-page border border-paper-line rounded-lg shadow-page p-6 max-w-sm w-full">
       <div class="flex justify-center mb-4">
-        <div class="w-16 h-16 flex items-center justify-center bg-red-100 rounded-full">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 000 16zm3-10a1 1 0 00-1.414-1.414L10 8.586 8.414 7A1 1 0 007 8.414L8.586 10 7 11.586A1 1 0 108.414 13L10 11.414l1.586 1.586A1 1 0 1013 11.586L11.414 10 13 8.414A1 1 0 0013 8z"
-              clip-rule="evenodd" />
-          </svg>
+        <div class="w-14 h-14 flex items-center justify-center bg-overdue/10 rounded-full">
+          <span class="material-icons text-overdue" style="font-size: 28px">error_outline</span>
         </div>
       </div>
-      <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Error al Registrar</h3>
-      <p class="text-gray-600 text-center">{{ errorMessage }}</p>
+      <h3 class="text-lg font-bold text-ink mb-2 text-center">No se pudo registrar</h3>
+      <p class="text-ink-soft text-center text-sm">{{ errorMessage }}</p>
       <button (click)="closeModal()"
-        class="mt-4 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition">
+        class="mt-5 w-full bg-overdue text-white py-2.5 rounded-lg hover:opacity-90 transition font-medium">
         Cerrar
       </button>
     </div>
   </div>
 
-  <!-- ✅ MODAL DE ÉXITO -->
-  <div *ngIf="showSuccessModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full relative">
+  <!-- MODAL DE ÉXITO -->
+  <div *ngIf="showSuccessModal" class="fixed inset-0 flex items-center justify-center bg-black/50 z-50 px-4">
+    <div class="notebook-page border border-paper-line rounded-lg shadow-page p-6 max-w-sm w-full">
       <div class="flex justify-center mb-4">
-        <div class="w-16 h-16 flex items-center justify-center bg-green-100 rounded-full">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" viewBox="0 0 20 20"
-            fill="currentColor">
-            <path fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 000 16zm3-10l-4 4-2-2a1 1 0 00-1.414 1.414L10 14l5-5a1 1 0 00-1.414-1.414z"
-              clip-rule="evenodd" />
-          </svg>
+        <div class="w-14 h-14 flex items-center justify-center bg-done/10 rounded-full">
+          <span class="material-icons text-done" style="font-size: 28px">check_circle</span>
         </div>
       </div>
-      <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">¡Registro Exitoso!</h3>
-      <p class="text-gray-600 text-center">Redirigiendo al inicio de sesión...</p>
+      <h3 class="text-lg font-bold text-ink text-center mb-1">¡Registro exitoso!</h3>
+      <p class="text-ink-soft text-center text-sm">Redirigiendo al inicio de sesión...</p>
     </div>
   </div>
-
 
 </div>

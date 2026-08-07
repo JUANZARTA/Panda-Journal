@@ -1,4 +1,86 @@
-/* You can add global styles to this file, and also import other style files */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================================
+   Paleta "cuaderno" — modo claro: papel, nunca blanco puro.
+   Modo oscuro: cuaderno negro premium, nunca negro puro.
+   Nada de inversión automática — cada modo tiene su propia paleta.
+   ============================================================ */
+:root {
+  --paper-bg: #f7f1e3;        /* crema/marfil */
+  --paper-bg-raised: #fdf9ef; /* levemente más clara, para inputs/superficies */
+  --paper-line: #e4d9bd;      /* renglón, casi imperceptible */
+  --ink: #2b2620;             /* texto principal, marrón muy oscuro (no negro puro) */
+  --ink-soft: #6b6355;        /* texto secundario */
+  --ink-faint: #a89d87;       /* texto terciario / placeholders */
+  --accent: #b8860b;          /* dorado, matching el logo */
+  --accent-soft: #e8d9ad;
+  --done: #3f7d54;
+  --pending: #8a8272;
+  --overdue: #b3483f;
+}
+
+:root.dark {
+  /* Gris neutro puro (R=G=B) — antes tenía un sesgo marrón que se leía
+     amarillento. El dorado queda solo en --accent, no filtrado en el fondo. */
+  --paper-bg: #1a1a1a;
+  --paper-bg-raised: #232323;
+  --paper-line: #333333;
+  --ink: #ededed;
+  --ink-soft: #a3a3a3;
+  --ink-faint: #6b6b6b;
+  --accent: #e0b23c;
+  --accent-soft: #3a3226;
+  --done: #5fae7c;
+  --pending: #8a8272;
+  --overdue: #e0685c;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--paper-bg);
+  color: var(--ink);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Líneas de renglón sutiles, para la "hoja" del día. */
+.notebook-page {
+  background-color: var(--paper-bg-raised);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 35px,
+    var(--paper-line) 36px
+  );
+  background-attachment: local;
+}
+
+.font-hand {
+  font-family: 'Caveat', cursive;
+}
+
+/* Transición de "pasar página" al cambiar de día — ver day-page.component.ts */
+@keyframes page-turn-next {
+  0% { opacity: 0; transform: perspective(1200px) rotateY(-6deg) translateX(24px); }
+  100% { opacity: 1; transform: perspective(1200px) rotateY(0) translateX(0); }
+}
+@keyframes page-turn-prev {
+  0% { opacity: 0; transform: perspective(1200px) rotateY(6deg) translateX(-24px); }
+  100% { opacity: 1; transform: perspective(1200px) rotateY(0) translateX(0); }
+}
+.page-turn-next {
+  animation: page-turn-next 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: left center;
+}
+.page-turn-prev {
+  animation: page-turn-prev 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: right center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-turn-next, .page-turn-prev { animation: none; }
+}

@@ -1,9 +1,33 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, throwError, forkJoin, of } from 'rxjs';
-import { catchError, tap, map, switchMap } from 'rxjs/operators';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
+// Autenticación real con Firebase Auth (SDK modular vía AngularFire) — antes este
+// servicio le pegaba a mano al REST de identitytoolkit y guardaba el perfil/las
+// notificaciones con HttpClient directo contra la URL de la RTDB, sin adjuntar
+// ningún token. Con el SDK real, cada operación de Database queda autenticada
+// automáticamente contra el usuario logueado (siempre que las Security Rules del
+// proyecto lo exijan — auditarlas es un paso aparte, no alcanza con este cambio).
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Observable, from, of, forkJoin, throwError } from 'rxjs';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
+
+import {
+  Auth,
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  getRedirectResult as fbGetRedirectResult,
+  signInWithEmailAndPassword,
+  signInWithRedirect,
+  signOut,
+  type UserCredential,
+} from '@angular/fire/auth';
+import {
+  Database,
+  ref,
+  get,
+  set,
+  update as dbUpdate,
+  remove as dbRemove,
+  push,
+} from '@angular/fire/database';
 
 export interface Notificacion {
   mensaje: string;
@@ -15,199 +39,70 @@ export interface Notificacion {
   providedIn: 'root',
 })
 export class AuthService {
-  private apiKey = 'AIzaSyCXaTov5g6_qWHoxHdI39tLzEH7VQx5ttw';
-  private baseUrl = 'https://identitytoolkit.googleapis.com/v1/accounts';
-  private dbUrl = 'https://misdeberes-fac01-default-rtdb.firebaseio.com';
+  private auth = inject(Auth);
+  private database = inject(Database);
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  constructor(private http: HttpClient) {}
+  // ==================
+  // Sesión
+  // ==================
 
-  //| Método para iniciar sesión con email y contraseña
-  login(email: string, password: string): Observable<any> {
-    const url = `${this.baseUrl}:signInWithPassword?key=${this.apiKey}`;
-    const body = { email, password, returnSecureToken: true };
-
-    return this.http.post(url, body).pipe(
-      tap((res: any) => localStorage.setItem('user', JSON.stringify(res))),
-      catchError((err) => throwError(() => err.error.error.message))
+  login(email: string, password: string): Observable<{ localId: string; email: string }> {
+    return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
+      map((cred) => this.persistSession(cred)),
+      catchError((err) => throwError(() => this.mapAuthErrorCode(err?.code)))
     );
   }
 
-  //| Método para iniciar sesión con Google
-  logout() {
+  register(email: string, password: string): Observable<{ localId: string; email: string }> {
+    return from(createUserWithEmailAndPassword(this.auth, email, password)).pipe(
+      map((cred) => this.persistSession(cred)),
+      catchError((err) => throwError(() => this.mapAuthErrorCode(err?.code)))
+    );
+  }
+
+  logout(): void {
+    signOut(this.auth).catch((err) => console.error('[ERROR] Al cerrar sesión:', err));
+    if (!this.isBrowser) return;
     localStorage.removeItem('user');
     localStorage.removeItem('selectedYear');
     localStorage.removeItem('selectedMonth');
   }
 
-  //| Método para cerrar sesión
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('user');
+    return this.isBrowser && !!localStorage.getItem('user');
   }
 
-  //| Método para verificar si el usuario está autenticado
-  getUser() {
+  getUser(): { id: string; email: string } | null {
+    if (!this.isBrowser) return null;
     const data = localStorage.getItem('user');
     if (!data) return null;
-
-    const parsed = JSON.parse(data);
-
-    // 🔧 Soporte para sesiones que todavía tienen localId
-    return {
-      id: parsed.id || parsed.localId,
-      email: parsed.email,
-    };
+    return JSON.parse(data);
   }
 
-  //| Método para obtener el token de Firebase
-  register(email: string, password: string): Observable<any> {
-    const url = `${this.baseUrl}:signUp?key=${this.apiKey}`;
-    const body = { email, password, returnSecureToken: true };
-
-    return this.http.post(url, body).pipe(
-      tap((res: any) => localStorage.setItem('user', JSON.stringify(res))),
-      catchError((err) => throwError(() => err.error.error.message))
-    );
-  }
-
-  //| Método para guardar el perfil del usuario en la base de datos
-  saveUserProfile(
-    userId: string,
-    name: string,
-    correo: string
-  ): Observable<any> {
-    const url = `${this.dbUrl}/${userId}.json`;
-
-    return this.http
-      .put(url, {
-        nombre: name,
-        correo: correo,
-        notificaciones: {
-          '-notif1': {
-            mensaje: 'Bienvenido a MisDeberes',
-            leido: false,
-            fecha: new Date().toLocaleString(),
-          },
-        },
-      })
-      .pipe(
-        tap(() => {
-          const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-          storedUser.name = name;
-          localStorage.setItem('user', JSON.stringify(storedUser));
-        }),
-        catchError(() => throwError(() => 'Error al guardar perfil'))
-      );
-  }
-
-  //| Método para obtener el perfil del usuario
-  getUserData(uid: string): Observable<any> {
-    const url = `${this.dbUrl}/${uid}.json`;
-    return this.http.get<any>(url);
-  }
-
-  //| Método para obtener el perfil del usuario por ID
-  getUserNotifications(uid: string): Observable<Record<string, Notificacion>> {
-    const url = `${this.dbUrl}/${uid}/notificaciones.json`;
-    return this.http.get<Record<string, Notificacion>>(url);
-  }
-
-  //| Método para obtener las notificaciones del usuario
-  markNotificationAsRead(uid: string, notifId: string): Observable<any> {
-    const url = `${this.dbUrl}/${uid}/notificaciones/${notifId}/leido.json`;
-    return this.http.put(url, true);
-  }
-
-  //| Método para eliminar una notificación del usuario
-  addNotification(uid: string, mensaje: string): Observable<any> {
-    const notificacionesUrl = `${this.dbUrl}/${uid}/notificaciones.json`;
-
-    return this.getUserNotifications(uid).pipe(
-      switchMap((data) => {
-        const allNotifs = data ? Object.entries(data) : [];
-        const total = allNotifs.length;
-
-        if (total >= 20) {
-          const sorted = allNotifs.sort(
-            (a, b) =>
-              new Date(a[1].fecha).getTime() - new Date(b[1].fecha).getTime()
-          );
-          const oldestKey = sorted[0][0];
-
-          const deleteUrl = `${this.dbUrl}/${uid}/notificaciones/${oldestKey}.json`;
-          return this.http.delete(deleteUrl).pipe(
-            switchMap(() => {
-              return this.http.post(notificacionesUrl, {
-                mensaje,
-                leido: false,
-                fecha: new Date().toLocaleString(),
-              });
-            })
-          );
-        } else {
-          return this.http.post(notificacionesUrl, {
-            mensaje,
-            leido: false,
-            fecha: new Date().toLocaleString(),
-          });
-        }
-      })
-    );
-  }
-
-  //| Método para eliminar notificaciones antiguas (más de 7 días)
-  cleanOldNotifications(uid: string): Observable<any> {
-    return this.getUserNotifications(uid).pipe(
-      switchMap((data) => {
-        if (!data) return of(null);
-
-        const now = new Date();
-        const deletions = Object.entries(data)
-          .filter(([_, notif]) => {
-            const fecha = new Date(notif.fecha);
-            const diffDays = Math.floor(
-              (now.getTime() - fecha.getTime()) / (1000 * 60 * 60 * 24)
-            );
-            return diffDays >= 7;
-          })
-          .map(([key]) => {
-            const delUrl = `${this.dbUrl}/${uid}/notificaciones/${key}.json`;
-            return this.http.delete(delUrl);
-          });
-
-        return deletions.length > 0 ? forkJoin(deletions) : of(null);
-      })
-    );
-  }
-
-  // Método para guardar sesión local del usuario autenticado
   guardarSesion(userId: string, email: string): void {
-    localStorage.setItem(
-      'user',
-      JSON.stringify({
-        id: userId,
-        email,
-      })
-    );
+    if (!this.isBrowser) return;
+    localStorage.setItem('user', JSON.stringify({ id: userId, email }));
   }
 
-  // Método para iniciar sesión con Google
   loginWithGoogle(): void {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithRedirect(provider);
+    signInWithRedirect(this.auth, new GoogleAuthProvider());
   }
 
-  // Método para obtener el token de Firebase
-  startAutoLogout(): void {
-    let timer: any;
+  getRedirectResult(): Promise<UserCredential | null> {
+    return fbGetRedirectResult(this.auth);
+  }
 
+  startAutoLogout(): void {
+    if (!this.isBrowser) return;
+
+    let timer: ReturnType<typeof setTimeout>;
     const resetTimer = () => {
       clearTimeout(timer);
       timer = setTimeout(() => {
         this.logout();
-        // window.location.href = '/miCartera/login'; // Redirigir al login
         window.location.href = `${document.baseURI}login`;
-
-      }, 5 * 60 * 1000); // 2 minutos
+      }, 5 * 60 * 1000);
     };
 
     window.addEventListener('mousemove', resetTimer);
@@ -215,6 +110,119 @@ export class AuthService {
     window.addEventListener('click', resetTimer);
     window.addEventListener('touchstart', resetTimer);
 
-    resetTimer(); // Iniciar temporizador al entrar
+    resetTimer();
+  }
+
+  // ==================
+  // Perfil
+  // ==================
+
+  saveUserProfile(userId: string, name: string, correo: string): Observable<void> {
+    return from(set(ref(this.database, userId), { nombre: name, correo })).pipe(
+      switchMap(() => {
+        const notifRef = push(ref(this.database, `${userId}/notificaciones`));
+        return from(
+          set(notifRef, {
+            mensaje: 'Bienvenido a Panda Journal',
+            leido: false,
+            fecha: new Date().toLocaleString(),
+          })
+        );
+      }),
+      tap(() => {
+        if (!this.isBrowser) return;
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        storedUser.name = name;
+        localStorage.setItem('user', JSON.stringify(storedUser));
+      }),
+      catchError(() => throwError(() => 'Error al guardar perfil'))
+    );
+  }
+
+  getUserData(uid: string): Observable<any> {
+    return from(get(ref(this.database, uid))).pipe(map((snap) => snap.val()));
+  }
+
+  // ==================
+  // Notificaciones (persistidas — distinto del NotificacionService en memoria del header)
+  // ==================
+
+  getUserNotifications(uid: string): Observable<Record<string, Notificacion>> {
+    return from(get(ref(this.database, `${uid}/notificaciones`))).pipe(map((snap) => snap.val() ?? {}));
+  }
+
+  markNotificationAsRead(uid: string, notifId: string): Observable<void> {
+    return from(dbUpdate(ref(this.database, `${uid}/notificaciones/${notifId}`), { leido: true }));
+  }
+
+  addNotification(uid: string, mensaje: string): Observable<void> {
+    const notificacionesPath = `${uid}/notificaciones`;
+    const crear = () => {
+      const nuevaRef = push(ref(this.database, notificacionesPath));
+      return from(set(nuevaRef, { mensaje, leido: false, fecha: new Date().toLocaleString() }));
+    };
+
+    return this.getUserNotifications(uid).pipe(
+      switchMap((data) => {
+        const entradas = Object.entries(data);
+        if (entradas.length < 20) return crear();
+
+        const [oldestKey] = entradas.sort(
+          (a, b) => new Date(a[1].fecha).getTime() - new Date(b[1].fecha).getTime()
+        )[0];
+
+        return from(dbRemove(ref(this.database, `${notificacionesPath}/${oldestKey}`))).pipe(
+          switchMap(crear)
+        );
+      })
+    );
+  }
+
+  cleanOldNotifications(uid: string): Observable<void[] | null> {
+    return this.getUserNotifications(uid).pipe(
+      switchMap((data) => {
+        const ahora = new Date();
+        const aBorrar = Object.entries(data ?? {}).filter(([, notif]) => {
+          const fecha = new Date(notif.fecha);
+          const diasTranscurridos = Math.floor((ahora.getTime() - fecha.getTime()) / (1000 * 60 * 60 * 24));
+          return diasTranscurridos >= 7;
+        });
+
+        if (aBorrar.length === 0) return of(null);
+
+        return forkJoin(
+          aBorrar.map(([key]) => from(dbRemove(ref(this.database, `${uid}/notificaciones/${key}`))))
+        );
+      })
+    );
+  }
+
+  // ==================
+  // Internos
+  // ==================
+
+  private persistSession(cred: UserCredential): { localId: string; email: string } {
+    const result = { localId: cred.user.uid, email: cred.user.email ?? '' };
+    if (this.isBrowser) {
+      localStorage.setItem('user', JSON.stringify({ id: result.localId, email: result.email }));
+    }
+    return result;
+  }
+
+  /** Traduce los códigos del SDK modular a los strings que ya esperan los componentes de login/register. */
+  private mapAuthErrorCode(code?: string): string {
+    switch (code) {
+      case 'auth/user-not-found':
+        return 'EMAIL_NOT_FOUND';
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+        return 'INVALID_PASSWORD';
+      case 'auth/user-disabled':
+        return 'USER_DISABLED';
+      case 'auth/email-already-in-use':
+        return 'EMAIL_EXISTS';
+      default:
+        return code ?? 'UNKNOWN_ERROR';
+    }
   }
 }

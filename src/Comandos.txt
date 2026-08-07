@@ -6,5 +6,5 @@ Remove-Item -Recurse -Force .\dist
 ng build --configuration production
 
 
-# Publica el contenido de 'dist/miCartera' directamente al branch 'gh-pages' de GitHub
-npx angular-cli-ghpages --dir=dist/misDeberes
+# Publica el contenido de 'dist/panda-journal' directamente al branch 'gh-pages' de GitHub
+npx angular-cli-ghpages --dir=dist/panda-journal
