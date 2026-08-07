@@ -1,4 +1,4 @@
-import { ApplicationConfig, PLATFORM_ID, inject, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, PLATFORM_ID, inject, provideZoneChangeDetection, isDevMode } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { provideRouter } from '@angular/router';
 import { provideClientHydration } from '@angular/platform-browser';
@@ -13,6 +13,7 @@ import { CategoryRepository } from './data-access/repositories/category.reposito
 import { FirebaseCategoryRepository } from './data-access/repositories/category.repository.firebase';
 import { TaskRepository } from './data-access/repositories/task.repository';
 import { FirebaseTaskRepository } from './data-access/repositories/task.repository.firebase';
+import { provideServiceWorker } from '@angular/service-worker';
 
 // Auth y Database tocan indexedDB/localStorage al inicializarse — en SSR (Node) eso
 // no existe. Los guardamos con isPlatformBrowser para que el render de servidor no
@@ -30,5 +31,9 @@ export const appConfig: ApplicationConfig = {
     // acá se cambia useClass por la implementación HTTP — nada más se toca.
     { provide: CategoryRepository, useClass: FirebaseCategoryRepository },
     { provide: TaskRepository, useClass: FirebaseTaskRepository },
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
 };

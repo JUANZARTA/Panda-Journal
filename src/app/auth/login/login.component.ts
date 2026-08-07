@@ -30,12 +30,9 @@ export class LoginComponent implements OnInit {
   welcomeName: string = '';
 
   constructor() {
-    // ⚠️ Valores por defecto SOLO para desarrollo (pediste agilizar el login local).
-    // Sacar esto antes de mandar a producción — si no, cualquiera que abra el form
-    // ve credenciales de prueba precargadas.
     this.loginForm = this.fb.group({
-      email: ['develop@gmail.com', [Validators.required, Validators.email]],
-      password: ['123456', [Validators.required, Validators.minLength(6)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
