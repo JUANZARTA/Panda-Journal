@@ -1,0 +1,39 @@
+# Despliegue (GitHub Pages)
+
+## Comandos
+
+```powershell
+# Elimina por completo la carpeta 'dist' para asegurarte de que el nuevo build sea limpio
+Remove-Item -Recurse -Force .\dist
+
+# Compila el proyecto Angular en modo producción con el baseHref correcto para GitHub Pages
+ng build --configuration production
+
+# Publica el contenido de 'dist/panda-journal' directamente al branch 'gh-pages' de GitHub
+npx angular-cli-ghpages --dir=dist/panda-journal
+```
+
+## IMPORTANTE: si renombrás el repo de GitHub
+
+Si el repositorio cambia de nombre, el `baseHref` queda desactualizado y la app despliega **en blanco**: el HTML carga bien, pero después busca el JS/CSS en la ruta vieja y da 404, así que Angular nunca arranca.
+
+Hay que actualizar el `baseHref` a mano en dos lugares para que coincida EXACTO (mayúsculas incluidas) con el nombre real del repo en GitHub (hoy es `Panda-Journal`, path `/Panda-Journal/`):
+
+- `src/index.html` → `<base href="/NOMBRE-DEL-REPO/">`
+- `angular.json` → `"baseHref": "/NOMBRE-DEL-REPO/"` (aparece **dos veces**: en las opciones de build por defecto y en la configuración `production`)
+
+El `outputPath` (`dist/panda-journal`) **no** hace falta cambiarlo — es solo la carpeta local donde cae el build, no afecta la URL publicada. Tampoco hace falta que coincida en mayúsculas con el repo, a diferencia del `baseHref`.
+
+## Firebase (Realtime Database)
+
+El despliegue de arriba es solo el frontend (GitHub Pages). Las Security Rules de Firebase se despliegan aparte:
+
+```powershell
+npx firebase-tools deploy --only database
+```
+
+Esto no toca GitHub Pages ni viceversa — son dos despliegues independientes.
+
+## PWA / Service Worker
+
+Todavía no está configurado en este proyecto (no hay `ngsw-config.json` ni manifest) — no aplica por ahora. Si en algún momento se agrega, acá va la nota sobre actualización en mobile con apps ya instaladas, como en Kontrol Cash.

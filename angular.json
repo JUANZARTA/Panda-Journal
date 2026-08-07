@@ -16,10 +16,10 @@
             "outputPath": "dist/panda-journal",
             "index": "src/index.html",
             "main": "src/main.ts",
-            "baseHref": "/panda-journal/",
+            "baseHref": "/Panda-Journal/",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
-            "assets": ["public", "src/assets"],
+            "assets": ["src/logo.ico", "src/assets"],
             "styles": ["src/styles.css"],
             "scripts": []
           },
@@ -38,7 +38,7 @@
                 }
               ],
               "outputHashing": "all",
-              "baseHref": "/panda-journal/"
+              "baseHref": "/Panda-Journal/"
             },
             "development": {
               "optimization": false,
