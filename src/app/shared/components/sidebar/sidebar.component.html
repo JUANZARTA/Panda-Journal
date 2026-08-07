@@ -73,6 +73,17 @@
 
   <div class="flex-1"></div>
 
+  <!-- Instalar app (solo aparece si el navegador lo permite — Chrome/Edge/Android) -->
+  <div *ngIf="pwaInstall.canInstall()" class="px-3 mb-1">
+    <button
+      (click)="pwaInstall.install()"
+      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-accent border border-accent hover:bg-accent-soft/40 transition"
+    >
+      <span class="material-icons text-lg">install_mobile</span>
+      Instalar app
+    </button>
+  </div>
+
   <!-- Modo oscuro -->
   <div class="px-3 mt-1">
     <button

@@ -5,6 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, take } from 'rxjs';
 
 import { UiStateService } from '../../../core/ui-state.service';
+import { PwaInstallService } from '../../../core/pwa-install.service';
 import { AuthService } from '../../../services/auth.service';
 import { NotificacionService } from '../../../services/notificacion.service';
 import { TaskService } from '../../../services/task.service';
@@ -20,6 +21,7 @@ import { Task } from '../../../models/task.model';
 })
 export class SidebarComponent implements OnInit {
   uiState = inject(UiStateService);
+  pwaInstall = inject(PwaInstallService);
   private router = inject(Router);
   private authService = inject(AuthService);
   private notificacionService = inject(NotificacionService);
