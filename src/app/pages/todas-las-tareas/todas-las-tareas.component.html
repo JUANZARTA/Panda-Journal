@@ -117,7 +117,7 @@
 
   <!-- Lista -->
   <div class="notebook-page rounded-lg shadow-page px-5 md:px-8 py-5">
-    <div *ngFor="let fila of filas(); trackBy: trackByFila" class="flex items-start gap-3 py-2 border-b border-paper-line last:border-0 group">
+    <div *ngFor="let fila of filas(); trackBy: trackByFila" class="flex flex-wrap items-start gap-3 py-2 border-b border-paper-line last:border-0 group">
       <button
         (click)="toggle(fila)"
         class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
@@ -168,17 +168,19 @@
       </ng-container>
 
       <ng-template #eligiendoFecha>
-        <input
-          type="date"
-          [(ngModel)]="fechaNueva"
-          class="text-xs bg-transparent border-b border-accent focus:outline-none text-ink"
-        />
-        <button (click)="confirmarReasignar(fila)" class="p-1 shrink-0">
-          <span class="material-icons text-done" style="font-size: 16px">check</span>
-        </button>
-        <button (click)="cancelarReasignar()" class="p-1 shrink-0">
-          <span class="material-icons text-ink-faint" style="font-size: 16px">close</span>
-        </button>
+        <div class="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+          <input
+            type="date"
+            [(ngModel)]="fechaNueva"
+            class="flex-1 sm:flex-none min-w-0 text-sm bg-transparent border-b border-accent focus:outline-none text-ink py-1"
+          />
+          <button (click)="confirmarReasignar(fila)" class="p-1 shrink-0">
+            <span class="material-icons text-done" style="font-size: 18px">check</span>
+          </button>
+          <button (click)="cancelarReasignar()" class="p-1 shrink-0">
+            <span class="material-icons text-ink-faint" style="font-size: 18px">close</span>
+          </button>
+        </div>
       </ng-template>
     </div>
 

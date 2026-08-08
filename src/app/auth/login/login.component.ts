@@ -8,6 +8,7 @@ import {  FormBuilder,
 } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { DateService } from '../../services/date.service';
+import { PwaInstallService } from '../../core/pwa-install.service';
 
 @Component({
   selector: 'app-login',
@@ -21,6 +22,7 @@ export class LoginComponent implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
   private dateService = inject(DateService);
+  pwaInstall = inject(PwaInstallService);
   showPassword: boolean = false;
 
   loginForm: FormGroup;

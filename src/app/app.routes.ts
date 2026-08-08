@@ -17,7 +17,8 @@ export const routes: Routes = [
   {
     path: 'app',
     canActivate: [AuthGuard], // ✅ Aquí aplicas el guard a TODA la sección protegida
-    loadComponent: () => import('./shared/components/layout/layout.component'),
+    loadComponent: () =>
+      import('./shared/components/layout/layout.component').then((m) => m.LayoutComponent),
     children: [
       { path: 'home', loadComponent: () => import('./pages/home/home.component') },
       { path: 'categorias', loadComponent: () => import('./pages/categories/categories.component') },

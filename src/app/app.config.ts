@@ -31,9 +31,14 @@ export const appConfig: ApplicationConfig = {
     // acá se cambia useClass por la implementación HTTP — nada más se toca.
     { provide: CategoryRepository, useClass: FirebaseCategoryRepository },
     { provide: TaskRepository, useClass: FirebaseTaskRepository },
+    // registerWhenStable esperaba a que la zona de Angular quede sin tareas
+    // pendientes — con los listeners de Firebase corriendo todo el tiempo, eso
+    // puede tardar los 30s completos antes de activar el service worker (y sin
+    // service worker activo, Chrome no dispara el evento de instalar). Con
+    // 'registerImmediately' se registra apenas carga la app, sin esperar nada.
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
-      registrationStrategy: 'registerWhenStable:30000',
+      registrationStrategy: 'registerImmediately',
     }),
   ],
 };

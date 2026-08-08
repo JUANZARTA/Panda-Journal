@@ -11,7 +11,7 @@ import { TaskService } from '../../../services/task.service';
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
 })
-export default class LayoutComponent {
+export class LayoutComponent {
   private taskService = inject(TaskService);
 
   constructor() {

@@ -78,6 +78,13 @@
             placeholder="Agregar tarea…"
             class="flex-1 bg-transparent placeholder:text-ink-faint text-ink focus:outline-none"
           />
+          <button
+            *ngIf="nuevoTaskTexto[categoria.id]"
+            (click)="agregarTarea(categoria.id)"
+            class="text-xs font-semibold text-accent px-2 py-1 shrink-0"
+          >
+            Agregar
+          </button>
         </div>
       </section>
     </ng-container>

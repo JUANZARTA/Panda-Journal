@@ -12,7 +12,7 @@
 
           <div
             *ngFor="let task of tareasDe(categoria.id); trackBy: trackByTaskId"
-            class="flex items-start gap-3 py-1.5 group"
+            class="flex flex-wrap items-start gap-3 py-1.5 group"
           >
             <button
               (click)="toggleTask(task)"
@@ -55,17 +55,19 @@
             </ng-container>
 
             <ng-template #eligiendoFecha>
-              <input
-                type="date"
-                [(ngModel)]="fechaElegida"
-                class="text-xs bg-transparent border-b border-accent focus:outline-none text-ink"
-              />
-              <button (click)="confirmarAsignarFecha(task)" class="p-1 shrink-0">
-                <span class="material-icons text-done" style="font-size: 16px">check</span>
-              </button>
-              <button (click)="cancelarAsignarFecha()" class="p-1 shrink-0">
-                <span class="material-icons text-ink-faint" style="font-size: 16px">close</span>
-              </button>
+              <div class="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+                <input
+                  type="date"
+                  [(ngModel)]="fechaElegida"
+                  class="flex-1 sm:flex-none min-w-0 text-sm bg-transparent border-b border-accent focus:outline-none text-ink py-1"
+                />
+                <button (click)="confirmarAsignarFecha(task)" class="p-1 shrink-0">
+                  <span class="material-icons text-done" style="font-size: 18px">check</span>
+                </button>
+                <button (click)="cancelarAsignarFecha()" class="p-1 shrink-0">
+                  <span class="material-icons text-ink-faint" style="font-size: 18px">close</span>
+                </button>
+              </div>
             </ng-template>
           </div>
         </ng-container>

@@ -7,6 +7,15 @@
       <p class="text-xs text-ink-faint">Tu cuaderno de tareas</p>
     </div>
 
+    <button
+      *ngIf="pwaInstall.canInstall()"
+      (click)="pwaInstall.install()"
+      class="w-full flex items-center justify-center gap-2 text-sm font-semibold text-accent border border-accent rounded-lg py-2 mb-6 hover:bg-accent-soft/40 transition"
+    >
+      <span class="material-icons" style="font-size: 18px">install_mobile</span>
+      Instalar app
+    </button>
+
     <h2 class="text-center text-lg font-semibold text-ink mb-6">Iniciar sesión</h2>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
