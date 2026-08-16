@@ -1,0 +1,234 @@
+<div class="notebook-page rounded-lg shadow-page p-4 md:p-6 overflow-x-auto">
+  <!-- Controles superiores -->
+  <div class="mb-4 flex flex-wrap gap-2 pb-4 border-b border-paper-line">
+    <button
+      *ngIf="clipboard()"
+      (click)="pasteBlock()"
+      class="px-3 py-1 text-sm bg-accent-soft text-ink rounded hover:bg-accent/20"
+    >
+      <span class="material-icons" style="font-size: 16px; vertical-align: middle;">content_paste</span>
+      Pegar
+    </button>
+  </div>
+
+  <!-- Grid container (CSS Grid) -->
+  <div class="overflow-x-auto">
+    <div
+      class="inline-block min-w-full"
+      [style.display]="'grid'"
+      [style.grid-template-columns]="'auto repeat(7, minmax(120px, 1fr))'"
+      [style.gap]="'0'"
+    >
+      <!-- Header: Esquina vacía -->
+      <div class="w-16 md:w-20 px-2 py-2 bg-paper-raised text-xs font-semibold text-ink-faint border-r border-b border-paper-line">
+        Horas
+      </div>
+
+      <!-- Header: Días -->
+      <div *ngFor="let dia of DIAS" class="px-3 py-2 bg-paper-raised text-center font-hand text-lg text-accent border-r border-b border-paper-line last:border-r-0">
+        {{ dia }}
+      </div>
+
+      <!-- Etiquetas de hora (columna izquierda) + Grid de celdas -->
+      <ng-container *ngFor="let hora of HORAS">
+        <!-- Etiqueta de hora -->
+        <div class="w-16 md:w-20 px-2 py-1 bg-paper-raised text-xs text-ink-faint border-r border-b border-paper-line font-semibold">
+          {{ hora.toString().padStart(2, '0') }}:00
+        </div>
+
+        <!-- Celdas por día -->
+        <div
+          *ngFor="let dia of DIAS_KEYS"
+          cdkDropList
+          [attr.data-dia]="dia"
+          [attr.data-hora]="hora"
+          cdkDropListDisabled
+          (cdkDropListDropped)="onBlockDragEnd($event)"
+          class="relative h-10 border-r border-b border-paper-line last:border-r-0 bg-paper hover:bg-paper-raised/30 transition cursor-pointer group"
+          (click)="openCreateModal(dia, hora); $event.stopPropagation()"
+          (dblclick)="openCreateModal(dia, hora); $event.stopPropagation()"
+        >
+          <!-- Bloques en esta celda (solo mostrar si hora === horaInicio) -->
+          <div
+            *ngFor="let block of getBlocksAtCell(dia, hora)"
+            cdkDrag
+            [cdkDragData]="block"
+            (contextmenu)="onContextMenu($event, block)"
+            (click)="selectBlock(block); $event.stopPropagation()"
+            class="absolute inset-x-0 top-0 px-1 py-0.5 rounded text-xs font-medium overflow-hidden flex flex-col justify-between cursor-grab active:cursor-grabbing group-hover:shadow-md transition"
+            [style.background-color]="getActivityColor(block.activityId)"
+            [style.color]="isLightColor(getActivityColor(block.activityId)) ? '#333333' : '#ffffff'"
+            [style.height.px]="block.duracion * 40"
+            [style.z-index]="selectedBlock()?.id === block.id ? '10' : '1'"
+            [ngClass]="{ 'ring-2 ring-ink': selectedBlock()?.id === block.id }"
+          >
+            <!-- Nombre de actividad -->
+            <div class="truncate leading-tight">
+              {{ getActivityName(block.activityId) }}
+            </div>
+
+            <!-- Duración y controles -->
+            <div class="text-xs opacity-90">
+              {{ block.duracion }}h
+            </div>
+
+            <!-- Resize handles (si es seleccionado) -->
+            <!-- Handle TOP (expandir arriba) -->
+            <div
+              *ngIf="selectedBlock()?.id === block.id"
+              (mousedown)="startResize(block, $event, 'top')"
+              class="absolute top-0 left-0 right-0 h-1 bg-white/40 cursor-ns-resize opacity-0 group-hover:opacity-100 transition"
+            ></div>
+
+            <!-- Handle BOTTOM (expandir abajo) -->
+            <div
+              *ngIf="selectedBlock()?.id === block.id"
+              (mousedown)="startResize(block, $event, 'bottom')"
+              class="absolute bottom-0 left-0 right-0 h-1 bg-white/40 cursor-ns-resize opacity-0 group-hover:opacity-100 transition"
+            ></div>
+
+            <!-- Handle LEFT (expandir izquierda) -->
+            <div
+              *ngIf="selectedBlock()?.id === block.id"
+              (mousedown)="startResize(block, $event, 'left')"
+              class="absolute top-0 bottom-0 left-0 w-1 bg-white/40 cursor-ew-resize opacity-0 group-hover:opacity-100 transition"
+            ></div>
+
+            <!-- Handle RIGHT (expandir derecha) -->
+            <div
+              *ngIf="selectedBlock()?.id === block.id"
+              (mousedown)="startResize(block, $event, 'right')"
+              class="absolute top-0 bottom-0 right-0 w-1 bg-white/40 cursor-ew-resize opacity-0 group-hover:opacity-100 transition"
+            ></div>
+
+            <!-- Botones de acción (si es seleccionado) -->
+            <div
+              *ngIf="selectedBlock()?.id === block.id"
+              class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition flex gap-1"
+            >
+              <button
+                (click)="copyBlock(block); $event.stopPropagation()"
+                title="Copiar"
+                class="p-0.5 bg-black/40 hover:bg-black/60 rounded text-xs"
+              >
+                <span class="material-icons" style="font-size: 14px;">content_copy</span>
+              </button>
+              <button
+                (click)="deleteBlock(block); $event.stopPropagation()"
+                title="Eliminar"
+                class="p-0.5 bg-overdue/70 hover:bg-overdue rounded text-xs"
+              >
+                <span class="material-icons" style="font-size: 14px;">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="mt-4 text-xs text-ink-faint">
+    <p>💡 Click en una celda para crear bloque • Arrastra para mover • Resize en el borde inferior</p>
+  </div>
+</div>
+
+<!-- Modal: Crear bloque -->
+<div
+  *ngIf="showCreateModal()"
+  class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+  (click)="closeCreateModal()"
+>
+  <div
+    class="bg-paper-raised rounded-lg shadow-page p-6 w-full max-w-sm"
+    (click)="$event.stopPropagation()"
+  >
+    <h2 class="font-hand text-2xl text-accent mb-4">Crear bloque</h2>
+
+    <div class="space-y-4">
+      <!-- Hora -->
+      <div>
+        <p class="text-sm font-semibold text-ink mb-2">
+          {{ formatHour(createModalHora()) }}:00 —
+          {{ formatHour((createModalHora() ?? 0) + (createModalDuracion() || 1)) }}:00
+        </p>
+        <p class="text-xs text-ink-faint">{{ DIAS[createModalDia() ?? 0] }}</p>
+      </div>
+
+      <!-- Duración -->
+      <div>
+        <label class="text-xs font-semibold text-ink-faint">Duración (horas)</label>
+        <input
+          type="number"
+          [value]="createModalDuracion()"
+          (change)="createModalDuracion.set($any($event.target).valueAsNumber)"
+          min="1"
+          max="24"
+          class="w-full px-3 py-2 mt-1 text-sm bg-paper border border-paper-line rounded focus:outline-none focus:ring-2 focus:ring-accent text-ink"
+        />
+      </div>
+
+      <!-- Actividades -->
+      <div>
+        <label class="text-xs font-semibold text-ink-faint">Actividad</label>
+        <div class="space-y-2 mt-2 max-h-48 overflow-y-auto">
+          <button
+            *ngFor="let activity of activities; trackBy: trackByActivityId"
+            (click)="selectActivityForBlock(activity.id)"
+            class="w-full p-3 text-left rounded-lg border-2 transition text-sm"
+            [style.border-color]="activity.color + '60'"
+            [ngClass]="{ 'ring-2 ring-ink': createModalActivityId() === activity.id }"
+          >
+            <div class="flex items-center gap-2">
+              <div class="w-4 h-4 rounded flex-shrink-0" [style.background-color]="activity.color"></div>
+              <span class="text-ink font-semibold">{{ activity.nombre }}</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex gap-2 mt-6 pt-4 border-t border-paper-line">
+        <button
+          (click)="closeCreateModal()"
+          class="flex-1 px-3 py-2 bg-paper-line text-ink rounded font-semibold hover:opacity-90 transition"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="confirmCreateBlock()"
+          [disabled]="!createModalActivityId()"
+          class="flex-1 px-3 py-2 bg-accent text-white rounded font-semibold hover:opacity-90 disabled:opacity-50 transition"
+        >
+          Crear
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Conflicto -->
+<div
+  *ngIf="showConflictModal()"
+  class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+  (click)="closeConflictModal()"
+>
+  <div
+    class="bg-paper-raised rounded-lg shadow-page p-6 w-full max-w-sm"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex gap-3 items-start">
+      <span class="material-icons text-overdue text-2xl flex-shrink-0">warning</span>
+      <div>
+        <h2 class="font-hand text-xl text-accent mb-2">Conflicto</h2>
+        <p class="text-sm text-ink mb-4">{{ conflictMessage() }}</p>
+        <button
+          (click)="closeConflictModal()"
+          class="w-full px-3 py-2 bg-accent text-white rounded font-semibold hover:opacity-90 transition"
+        >
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

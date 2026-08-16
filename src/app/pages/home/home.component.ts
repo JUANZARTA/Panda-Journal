@@ -63,9 +63,7 @@ export default class HomeComponent {
   editandoTaskId = '';
   editandoTaskNombre = '';
 
-  constructor() {
-    this.authService.startAutoLogout();
-  }
+  constructor() {}
 
   trackById(_index: number, item: TaskType): string {
     return item.id;

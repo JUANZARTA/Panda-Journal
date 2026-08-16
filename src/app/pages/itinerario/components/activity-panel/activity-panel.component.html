@@ -1,0 +1,223 @@
+<div class="notebook-page rounded-lg shadow-page p-6 flex flex-col gap-4">
+  <!-- Encabezado -->
+  <div class="border-b border-paper-line pb-4">
+    <p class="font-hand text-2xl text-accent mb-2">Actividades</p>
+    <p class="text-xs text-ink-faint">Crea y personaliza tus actividades</p>
+  </div>
+
+  <!-- Lista de actividades existentes -->
+  <div class="space-y-2 flex-1 overflow-y-auto max-h-96">
+    <div
+      *ngFor="let activity of activities; trackBy: trackByActivityId"
+      class="group p-3 rounded-lg border-2 transition cursor-pointer"
+      [style.border-color]="activity.color + '40'"
+      [ngClass]="{ 'ring-2 ring-ink': selectedActivityId === activity.id }"
+    >
+      <!-- Edit mode -->
+      <ng-container *ngIf="editingActivityId() === activity.id; else viewMode">
+        <div class="space-y-2">
+          <!-- Nombre -->
+          <input
+            type="text"
+            [(ngModel)]="editingName"
+            placeholder="Nombre"
+            class="w-full px-2 py-1 text-sm bg-transparent border-b border-accent focus:outline-none text-ink"
+          />
+
+          <!-- Color picker -->
+          <div class="flex gap-2 flex-wrap">
+            <div *ngFor="let color of colorPresets">
+              <button
+                (click)="setEditingColor(color)"
+                class="w-6 h-6 rounded border-2 transition"
+                [style.background-color]="color"
+                [style.border-color]="editingColor() === color ? '#000' : 'transparent'"
+              ></button>
+            </div>
+            <input
+              type="color"
+              [(ngModel)]="editingColor"
+              class="w-6 h-6 rounded cursor-pointer"
+            />
+          </div>
+
+          <!-- Descripción -->
+          <textarea
+            [(ngModel)]="editingDescription"
+            placeholder="Descripción (opcional)"
+            rows="2"
+            class="w-full px-2 py-1 text-xs bg-transparent border border-paper-line rounded focus:outline-none text-ink resize-none"
+          ></textarea>
+
+          <!-- Botones -->
+          <div class="flex gap-2 text-xs">
+            <button
+              (click)="saveEdit(activity)"
+              class="flex-1 px-2 py-1 bg-done text-white rounded font-semibold hover:opacity-90"
+            >
+              Guardar
+            </button>
+            <button
+              (click)="cancelEdit()"
+              class="flex-1 px-2 py-1 bg-paper-line text-ink rounded font-semibold hover:opacity-90"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- View mode -->
+      <ng-template #viewMode>
+        <div class="flex items-start gap-2">
+          <!-- Color sample -->
+          <div
+            class="w-8 h-8 rounded flex-shrink-0 border border-paper-line"
+            [style.background-color]="activity.color"
+          ></div>
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-sm text-ink">{{ activity.nombre }}</p>
+            <p *ngIf="activity.descripcion" class="text-xs text-ink-faint line-clamp-2">
+              {{ activity.descripcion }}
+            </p>
+          </div>
+
+          <!-- Acciones -->
+          <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition flex-shrink-0">
+            <button
+              (click)="startEditing(activity)"
+              title="Editar"
+              class="p-1 text-ink-soft hover:text-accent"
+            >
+              <span class="material-icons" style="font-size: 16px;">edit</span>
+            </button>
+            <button
+              (click)="deleteActivity(activity.id)"
+              title="Eliminar"
+              class="p-1 text-ink-soft hover:text-overdue"
+            >
+              <span class="material-icons" style="font-size: 16px;">delete</span>
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Nueva actividad -->
+  <div class="border-t border-paper-line pt-4">
+    <button
+      (click)="toggleNewActivityForm()"
+      class="w-full px-3 py-2 text-sm font-semibold bg-accent text-white rounded-lg hover:opacity-90 transition flex items-center justify-center gap-2"
+    >
+      <span class="material-icons" style="font-size: 18px;">add</span>
+      {{ isCreatingNew() ? 'Cancelar' : 'Nueva actividad' }}
+    </button>
+
+    <!-- Formulario de nueva actividad -->
+    <div *ngIf="isCreatingNew()" class="mt-4 space-y-3 pt-4 border-t border-paper-line">
+      <!-- Nombre -->
+      <div>
+        <label class="text-xs font-semibold text-ink-faint">Nombre</label>
+        <input
+          type="text"
+          [(ngModel)]="newActivityName"
+          placeholder="ej: Trabajo, Ejercicio, Dormir"
+          class="w-full px-3 py-2 mt-1 text-sm bg-paper border border-paper-line rounded focus:outline-none focus:ring-2 focus:ring-accent text-ink"
+        />
+      </div>
+
+      <!-- Color -->
+      <div>
+        <label class="text-xs font-semibold text-ink-faint">Color</label>
+        <div class="flex gap-2 flex-wrap mt-2">
+          <div *ngFor="let color of colorPresets">
+            <button
+              (click)="setNewActivityColor(color)"
+              class="w-8 h-8 rounded border-2 transition hover:scale-110"
+              [style.background-color]="color"
+              [style.border-color]="newActivityColor() === color ? '#000' : 'transparent'"
+              [title]="color"
+            ></button>
+          </div>
+          <!-- Color picker personalizado -->
+          <div class="flex items-center gap-1">
+            <input
+              type="color"
+              [(ngModel)]="newActivityColor"
+              class="w-8 h-8 rounded cursor-pointer border-2 border-paper-line"
+              title="Color personalizado"
+            />
+            <input
+              type="text"
+              [(ngModel)]="newActivityColor"
+              placeholder="#000000"
+              class="w-20 px-2 py-1 text-xs bg-paper border border-paper-line rounded focus:outline-none focus:ring-2 focus:ring-accent text-ink font-mono"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <label class="text-xs font-semibold text-ink-faint">Descripción (opcional)</label>
+        <textarea
+          [(ngModel)]="newActivityDescription"
+          placeholder="ej: Trabajo de 9 a 17"
+          rows="2"
+          class="w-full px-3 py-2 mt-1 text-sm bg-paper border border-paper-line rounded focus:outline-none focus:ring-2 focus:ring-accent text-ink resize-none"
+        ></textarea>
+      </div>
+
+      <!-- Botón crear -->
+      <button
+        (click)="createActivity()"
+        [disabled]="!newActivityName().trim()"
+        class="w-full px-3 py-2 bg-accent text-white text-sm font-semibold rounded hover:opacity-90 disabled:opacity-50 transition"
+      >
+        Crear actividad
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirmar eliminación -->
+<div
+  *ngIf="showDeleteConfirm()"
+  class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+  (click)="closeDeleteConfirm()"
+>
+  <div
+    class="bg-paper-raised rounded-lg shadow-page p-6 w-full max-w-sm"
+    (click)="$event.stopPropagation()"
+  >
+    <h2 class="font-hand text-2xl text-accent mb-4">¿Eliminar actividad?</h2>
+
+    <div class="mb-6">
+      <p class="text-sm text-ink mb-2">
+        <span class="font-semibold">{{ deleteConfirmActivityName() }}</span>
+      </p>
+      <p class="text-xs text-ink-faint">
+        Se eliminarán también todos los bloques asociados a esta actividad en el itinerario.
+      </p>
+    </div>
+
+    <!-- Botones -->
+    <div class="flex gap-2 pt-4 border-t border-paper-line">
+      <button
+        (click)="closeDeleteConfirm()"
+        class="flex-1 px-3 py-2 bg-paper-line text-ink rounded font-semibold hover:opacity-90 transition"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="confirmDeleteActivity()"
+        class="flex-1 px-3 py-2 bg-overdue text-white rounded font-semibold hover:opacity-90 transition"
+      >
+        Eliminar
+      </button>
+    </div>
+  </div>
+</div>

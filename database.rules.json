@@ -59,6 +59,26 @@
           },
           "$other": { ".validate": false }
         }
+      },
+
+      "itinerario": {
+        "activities": {
+          "$activityId": {
+            "nombre": { ".validate": "newData.isString()" },
+            "color": { ".validate": "newData.isString()" },
+            "descripcion": { ".validate": "newData.isString()" },
+            "$other": { ".validate": false }
+          }
+        },
+        "blocks": {
+          "$blockId": {
+            "activityId": { ".validate": "newData.isString()" },
+            "dia": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 7" },
+            "horaInicio": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 24" },
+            "duracion": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 24" },
+            "$other": { ".validate": false }
+          }
+        }
       }
     }
   }

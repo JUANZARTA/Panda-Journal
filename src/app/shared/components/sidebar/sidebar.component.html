@@ -69,6 +69,15 @@
         {{ lostCount() }}
       </span>
     </a>
+    <a
+      routerLink="/app/itinerario"
+      routerLinkActive="bg-accent-soft text-ink"
+      (click)="navigate('/app/itinerario')"
+      class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+    >
+      <span class="material-icons text-lg">schedule</span>
+      Itinerario
+    </a>
   </nav>
 
   <div class="flex-1"></div>
