@@ -31,6 +31,11 @@ export class LoginComponent implements OnInit {
   errorMessage = '';
   welcomeName: string = '';
 
+  // Estado machine para overlay spinner
+  showLoginOverlay = false;
+  loginSuccess = false;
+  loginError = false;
+
   constructor() {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -44,16 +49,24 @@ ngOnInit(): void {
     .getRedirectResult()
     .then((result) => {
       if (result?.user) {
-        this.welcomeName = result.user.displayName || 'Usuario';
-        this.showSuccessModal = true;
+        // Verificar que la sesión fue persistida en localStorage
+        const persistedUser = this.authService.getUser();
+        if (persistedUser) {
+          this.welcomeName = result.user.displayName || 'Usuario';
+          this.showSuccessModal = true;
 
-        setTimeout(() => {
-          this.router.navigate(['app/home']);
-        }, 1000);
+          setTimeout(() => {
+            this.router.navigate(['app/home']);
+          }, 1000);
+        } else {
+          console.error('[ERROR] Session no fue persistida en localStorage');
+          this.showErrorModal('Error al guardar sesión. Intenta de nuevo.');
+        }
       }
     })
     .catch((error) => {
-      console.error('Error en getRedirectResult:', error);
+      console.error('[ERROR] En getRedirectResult:', error);
+      this.showErrorModal('Error en autenticación con Google. Intenta de nuevo.');
     });
 }
 
@@ -65,18 +78,39 @@ ngOnInit(): void {
 
   onSubmit() {
     if (this.loginForm.valid) {
+      // Mostrar overlay antes de iniciar login
+      this.showLoginOverlay = true;
+      this.loginSuccess = false;
+      this.loginError = false; // Reset error
+
       const { email, password } = this.loginForm.value;
 
       this.authService.login(email, password).subscribe({
         next: (res) => {
           const uid = res.localId;
+          this.loginSuccess = true; // Indica éxito
 
           this.authService.getUserData(uid).subscribe((userData) => {
             const nombre = userData?.nombre || '';
             this.showWelcomeModal(nombre);
+
+            // Cerrar overlay después de 1.5s
+            setTimeout(() => {
+              this.showLoginOverlay = false;
+            }, 1500);
           });
         },
         error: (errorMsg) => {
+          this.loginSuccess = false;
+          this.loginError = true; // Indica error
+          this.showLoginOverlay = true; // Mantener overlay para mostrar error
+
+          // Ocultar overlay automáticamente después de 2s
+          setTimeout(() => {
+            this.showLoginOverlay = false;
+          }, 2000);
+
+          // Mostrar mensaje de error detallado
           this.showErrorModal(this.getFirebaseErrorMessage(errorMsg));
         },
       });

@@ -73,7 +73,7 @@ export class AuthService {
     return this.isBrowser && !!localStorage.getItem('user');
   }
 
-  getUser(): { id: string; email: string } | null {
+  getUser(): { id: string; email: string; displayName?: string } | null {
     if (!this.isBrowser) return null;
     const data = localStorage.getItem('user');
     if (!data) return null;
@@ -90,27 +90,41 @@ export class AuthService {
   }
 
   getRedirectResult(): Promise<UserCredential | null> {
-    return fbGetRedirectResult(this.auth);
+    return fbGetRedirectResult(this.auth).then((cred) => {
+      if (cred?.user) {
+        this.persistSession(cred);
+      }
+      return cred;
+    });
   }
 
-  startAutoLogout(): void {
-    if (!this.isBrowser) return;
+  startAutoLogout(): () => void {
+    if (!this.isBrowser) return () => {};
 
     let timer: ReturnType<typeof setTimeout>;
+    const abortController = new AbortController();
+    const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutos
+
     const resetTimer = () => {
       clearTimeout(timer);
       timer = setTimeout(() => {
         this.logout();
         window.location.href = `${document.baseURI}login`;
-      }, 5 * 60 * 1000);
+      }, INACTIVITY_TIMEOUT);
     };
 
-    window.addEventListener('mousemove', resetTimer);
-    window.addEventListener('keydown', resetTimer);
-    window.addEventListener('click', resetTimer);
-    window.addEventListener('touchstart', resetTimer);
+    const events = ['mousemove', 'keydown', 'click', 'touchstart'];
+    events.forEach((event) => {
+      window.addEventListener(event, resetTimer, { signal: abortController.signal });
+    });
 
     resetTimer();
+
+    // Devuelve función de cleanup
+    return () => {
+      clearTimeout(timer);
+      abortController.abort();
+    };
   }
 
   // ==================
@@ -204,7 +218,11 @@ export class AuthService {
   private persistSession(cred: UserCredential): { localId: string; email: string } {
     const result = { localId: cred.user.uid, email: cred.user.email ?? '' };
     if (this.isBrowser) {
-      localStorage.setItem('user', JSON.stringify({ id: result.localId, email: result.email }));
+      const userData: any = { id: result.localId, email: result.email };
+      if (cred.user.displayName) {
+        userData.displayName = cred.user.displayName;
+      }
+      localStorage.setItem('user', JSON.stringify(userData));
     }
     return result;
   }

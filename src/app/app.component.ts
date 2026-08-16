@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -8,10 +9,11 @@ import { RouterOutlet, Router } from '@angular/router';
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'Mis Deberes';
-
-  constructor(private router: Router) {}
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private cleanupAutoLogout: (() => void) | null = null;
 
   ngOnInit(): void {
     const params = new URLSearchParams(window.location.search);
@@ -20,6 +22,15 @@ export class AppComponent implements OnInit {
       window.history.replaceState({}, '', redirect);
       this.router.navigateByUrl(redirect);
     }
+
+    // Inicializa auto-logout a nivel de app (persiste a través de navegación)
+    this.cleanupAutoLogout = this.authService.startAutoLogout();
   }
 
+  ngOnDestroy(): void {
+    // Limpia listeners de inactividad si existen
+    if (this.cleanupAutoLogout) {
+      this.cleanupAutoLogout();
+    }
+  }
 }

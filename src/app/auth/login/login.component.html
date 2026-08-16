@@ -95,3 +95,34 @@
     <h3 class="text-lg font-bold text-ink text-center">¡Bienvenido, {{ welcomeName }}!</h3>
   </div>
 </div>
+
+<!-- OVERLAY ANIMADO DE LOGIN CON SPINNER -->
+<div *ngIf="showLoginOverlay" class="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50 px-4">
+  <div class="notebook-page border border-paper-line rounded-lg shadow-page p-8 max-w-sm w-full flex flex-col items-center justify-center animate-pop-in">
+
+    <div class="w-16 h-16 mb-4 flex items-center justify-center">
+      <!-- Spinner (cargando) -->
+      <svg *ngIf="!loginSuccess && !loginError" class="animate-spin h-10 w-10 text-accent"
+        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+
+      <!-- Checkmark (éxito) -->
+      <div *ngIf="loginSuccess" class="flex items-center justify-center">
+        <span class="material-icons text-done" style="font-size: 40px">check_circle</span>
+      </div>
+
+      <!-- X (error) -->
+      <div *ngIf="loginError" class="flex items-center justify-center">
+        <span class="material-icons text-overdue" style="font-size: 40px">error_outline</span>
+      </div>
+    </div>
+
+    <h3 class="text-lg font-semibold text-ink text-center">
+      <span *ngIf="loginSuccess">¡Ingreso correcto!</span>
+      <span *ngIf="loginError">Error al iniciar sesión</span>
+      <span *ngIf="!loginSuccess && !loginError">Ingresando...</span>
+    </h3>
+  </div>
+</div>
