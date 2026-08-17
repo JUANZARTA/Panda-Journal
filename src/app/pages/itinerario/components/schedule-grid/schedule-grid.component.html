@@ -133,15 +133,13 @@
   </div>
 </div>
 
-<!-- Modal: Crear bloque -->
+<!-- Modal: Crear bloque (NO se cierra con click afuera) -->
 <div
   *ngIf="showCreateModal()"
-  class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
-  (click)="closeCreateModal()"
+  class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 pointer-events-none"
 >
   <div
-    class="bg-paper-raised rounded-lg shadow-page p-6 w-full max-w-sm"
-    (click)="$event.stopPropagation()"
+    class="bg-paper-raised rounded-lg shadow-page p-6 w-full max-w-sm pointer-events-auto"
   >
     <h2 class="font-hand text-2xl text-accent mb-4">Crear bloque</h2>
 

@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, signal, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, inject, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Activity, ScheduleBlock } from '../../../../models/schedule.model';
 import { ScheduleService } from '../../../../services/schedule.service';
+import Chart from 'chart.js/auto';
 
 @Component({
   selector: 'app-activity-panel',
@@ -11,13 +12,16 @@ import { ScheduleService } from '../../../../services/schedule.service';
   templateUrl: './activity-panel.component.html',
   styleUrl: './activity-panel.component.css',
 })
-export class ActivityPanelComponent {
+export class ActivityPanelComponent implements AfterViewInit {
   @Input() activities: Activity[] = [];
   @Input() blocks: ScheduleBlock[] = [];
   @Input() selectedActivityId: string | null = null;
   @Output() activitySelected = new EventEmitter<string | null>();
 
+  @ViewChild('statsChart') chartCanvas: ElementRef | undefined;
+
   private scheduleService = inject(ScheduleService);
+  private chart: Chart | null = null;
 
   // Form state
   newActivityName = signal('');
@@ -35,6 +39,10 @@ export class ActivityPanelComponent {
   showDeleteConfirm = signal(false);
   deleteConfirmActivityId = signal<string | null>(null);
   deleteConfirmActivityName = signal('');
+
+  // Modal de estadísticas
+  showStatsModal = signal(false);
+  activityStats = signal<{ activity: Activity; totalHours: number; hoursByDay: number[] }[]>([]);
 
   // Color presets (16 colores + picker)
   colorPresets = [
@@ -171,6 +179,97 @@ export class ActivityPanelComponent {
 
   setNewActivityColor(color: string): void {
     this.newActivityColor.set(color);
+  }
+
+  ngAfterViewInit(): void {}
+
+  // ========== STATISTICS ==========
+
+  openStatsModal(): void {
+    this.calculateStats();
+    this.showStatsModal.set(true);
+    // Dibujar gráfica después que el DOM se actualiza
+    setTimeout(() => this.drawChart(), 100);
+  }
+
+  closeStatsModal(): void {
+    this.showStatsModal.set(false);
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+  }
+
+  private drawChart(): void {
+    if (!this.chartCanvas) return;
+
+    const ctx = this.chartCanvas.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    // Destruir gráfica anterior
+    if (this.chart) {
+      this.chart.destroy();
+    }
+
+    const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const stats = this.activityStats();
+
+    // Preparar datasets para cada actividad
+    const datasets = stats.map((stat) => ({
+      label: stat.activity.nombre,
+      data: stat.hoursByDay,
+      borderColor: stat.activity.color,
+      backgroundColor: stat.activity.color + '20',
+      tension: 0.4,
+      fill: false,
+      borderWidth: 2,
+      pointRadius: 4,
+      pointBackgroundColor: stat.activity.color,
+    }));
+
+    this.chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: dias,
+        datasets,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: (value) => value + 'h',
+            },
+          },
+        },
+      },
+    });
+  }
+
+  private calculateStats(): void {
+    const stats = this.activities.map((activity) => {
+      const blocksForActivity = this.blocks.filter((b) => b.activityId === activity.id);
+
+      // Total de horas
+      const totalHours = blocksForActivity.reduce((sum, block) => sum + block.duracion, 0);
+
+      // Horas por día (7 días: Lunes-Domingo = índices 0-6)
+      const hoursByDay = Array(7).fill(0);
+      blocksForActivity.forEach((block) => {
+        hoursByDay[block.dia] += block.duracion;
+      });
+
+      return { activity, totalHours, hoursByDay };
+    });
+
+    this.activityStats.set(stats.sort((a, b) => b.totalHours - a.totalHours));
   }
 
   // ========== TRACKBY ==========

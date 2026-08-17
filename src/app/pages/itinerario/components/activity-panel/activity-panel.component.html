@@ -1,7 +1,16 @@
 <div class="notebook-page rounded-lg shadow-page p-6 flex flex-col gap-4">
   <!-- Encabezado -->
   <div class="border-b border-paper-line pb-4">
-    <p class="font-hand text-2xl text-accent mb-2">Actividades</p>
+    <div class="flex items-center justify-between mb-2">
+      <p class="font-hand text-2xl text-accent">Actividades</p>
+      <button
+        (click)="openStatsModal()"
+        title="Ver estadísticas"
+        class="p-1.5 text-accent hover:bg-accent-soft rounded transition"
+      >
+        <span class="material-icons text-lg">bar_chart</span>
+      </button>
+    </div>
     <p class="text-xs text-ink-faint">Crea y personaliza tus actividades</p>
   </div>
 
@@ -178,6 +187,67 @@
         class="w-full px-3 py-2 bg-accent text-white text-sm font-semibold rounded hover:opacity-90 disabled:opacity-50 transition"
       >
         Crear actividad
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Estadísticas -->
+<div
+  *ngIf="showStatsModal()"
+  class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 overflow-y-auto"
+  (click)="closeStatsModal()"
+>
+  <div
+    class="bg-paper-raised rounded-lg shadow-page p-6 w-full max-w-2xl my-8"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="font-hand text-2xl text-accent">Estadísticas de actividades</h2>
+      <button (click)="closeStatsModal()" class="text-ink-soft hover:text-ink">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Tabla simple: Color | Actividad | Descripción | Total -->
+    <div class="mb-6 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b-2 border-paper-line">
+            <th class="w-8 py-2 px-2"></th>
+            <th class="text-left py-2 px-2 font-semibold text-ink">Actividad</th>
+            <th class="text-left py-2 px-2 font-semibold text-ink">Descripción</th>
+            <th class="text-center py-2 px-2 font-semibold text-ink bg-accent-soft w-16">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let stat of activityStats()" class="border-b border-paper-line hover:bg-paper-raised/50">
+            <td class="py-2 px-2">
+              <div
+                class="w-4 h-4 rounded flex-shrink-0"
+                [style.background-color]="stat.activity.color"
+              ></div>
+            </td>
+            <td class="py-2 px-2 text-ink font-medium">{{ stat.activity.nombre }}</td>
+            <td class="py-2 px-2 text-ink-faint text-xs line-clamp-2">{{ stat.activity.descripcion || '-' }}</td>
+            <td class="text-center py-2 px-2 font-semibold text-ink bg-accent-soft">{{ stat.totalHours }}h</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Gráfica de líneas -->
+    <div class="bg-paper rounded-lg p-4 mb-4 h-64">
+      <canvas #statsChart></canvas>
+    </div>
+
+    <!-- Botón cerrar -->
+    <div class="flex justify-end pt-4 border-t border-paper-line">
+      <button
+        (click)="closeStatsModal()"
+        class="px-4 py-2 bg-accent text-white rounded font-semibold hover:opacity-90 transition"
+      >
+        Cerrar
       </button>
     </div>
   </div>
