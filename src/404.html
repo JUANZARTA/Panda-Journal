@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Panda Journal</title>
+  <base href="/Panda-Journal/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    // Guardar la ruta original que causó 404
+    sessionStorage.setItem('redirect', window.location.pathname);
+  </script>
+  <!-- Redireccionar inmediatamente a index.html -->
+  <script>
+    window.location.href = '/Panda-Journal/';
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

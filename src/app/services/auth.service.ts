@@ -101,6 +101,9 @@ export class AuthService {
   startAutoLogout(): () => void {
     if (!this.isBrowser) return () => {};
 
+    // Auto-logout deshabilitado — sin límite de sesión activa
+    // Código comentado para posible reutilización:
+    /*
     let timer: ReturnType<typeof setTimeout>;
     const abortController = new AbortController();
     const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutos
@@ -125,6 +128,10 @@ export class AuthService {
       clearTimeout(timer);
       abortController.abort();
     };
+    */
+
+    // Devuelve cleanup vacío (auto-logout deshabilitado)
+    return () => {};
   }
 
   // ==================

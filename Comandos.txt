@@ -10,7 +10,7 @@ Remove-Item -Recurse -Force .\dist
 ng build --configuration production
 
 # Publica el contenido de 'dist/panda-journal' directamente al branch 'gh-pages' de GitHub
-npx angular-cli-ghpages --dir=dist/panda-journal
+ng build --configuration production --base-href=/Panda-Journal/
 ```
 
 ## IMPORTANTE: si renombrás el repo de GitHub
