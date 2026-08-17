@@ -17,3 +17,16 @@
 [cdkDrag] {
   user-select: none;
 }
+
+/* Sticky header y columna de horas */
+.sticky-hour {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+}
+
+.sticky-header-corner {
+  position: sticky;
+  left: 0;
+  z-index: 30;
+}

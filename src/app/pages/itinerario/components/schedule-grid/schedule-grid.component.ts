@@ -5,7 +5,8 @@ import { Activity, ScheduleBlock } from '../../../../models/schedule.model';
 import { Task } from '../../../../models/task.model';
 import { ScheduleService } from '../../../../services/schedule.service';
 
-const HORAS = Array.from({ length: 24 }, (_, i) => i);
+// Horas: 05:00-23:00 (productivo) + 00:00-04:00 (sueño) al final
+const HORAS = [...Array.from({ length: 19 }, (_, i) => i + 5), ...Array.from({ length: 5 }, (_, i) => i)];
 const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const DIAS_KEYS = [0, 1, 2, 3, 4, 5, 6];
 
@@ -408,5 +409,11 @@ export class ScheduleGridComponent implements OnInit {
 
   formatHour(hour: number | null): string {
     return (hour ?? 0).toString().padStart(2, '0');
+  }
+
+  formatHourWithAmPm(hour: number): string {
+    const h12 = hour % 12 === 0 ? 12 : hour % 12;
+    const ampm = hour < 12 ? 'AM' : 'PM';
+    return `${h12.toString().padStart(2, '0')}:00 ${ampm}`;
   }
 }
