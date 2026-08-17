@@ -110,4 +110,37 @@ export class ScheduleService {
     const path = `${uid}/itinerario/blocks/${id}`;
     return from(dbRemove(ref(this.db, path)));
   }
+
+  // ========== CURRENT ACTIVITY ==========
+
+  /** Devuelve el bloque que está ocurriendo ahora mismo */
+  getCurrentBlock(): Observable<{ block: ScheduleBlock | null; activity: Activity | null }> {
+    return this.watchScheduleBlocks().pipe(
+      switchMap((blocks) => {
+        const now = new Date();
+        const hoy = now.getDay() === 0 ? 6 : now.getDay() - 1; // Convertir a 0=Lunes
+        const horaActual = now.getHours();
+
+        // Buscar el bloque que contiene la hora actual en el día de hoy
+        const currentBlock = blocks.find(
+          (b) =>
+            b.dia === hoy &&
+            horaActual >= b.horaInicio &&
+            horaActual < b.horaInicio + b.duracion
+        );
+
+        if (!currentBlock) {
+          return of({ block: null, activity: null });
+        }
+
+        // Obtener la actividad del bloque
+        return this.watchActivities().pipe(
+          map((activities) => {
+            const activity = activities.find((a) => a.id === currentBlock.activityId) || null;
+            return { block: currentBlock, activity };
+          })
+        );
+      })
+    );
+  }
 }

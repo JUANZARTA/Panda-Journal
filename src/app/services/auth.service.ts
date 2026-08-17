@@ -103,7 +103,7 @@ export class AuthService {
 
     let timer: ReturnType<typeof setTimeout>;
     const abortController = new AbortController();
-    const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutos
+    const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutos
 
     const resetTimer = () => {
       clearTimeout(timer);

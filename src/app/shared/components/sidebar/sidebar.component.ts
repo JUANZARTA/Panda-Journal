@@ -2,7 +2,7 @@ import { Component, ElementRef, HostListener, OnInit, ViewChild, computed, injec
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { combineLatest, take } from 'rxjs';
+import { combineLatest, take, startWith } from 'rxjs';
 
 import { UiStateService } from '../../../core/ui-state.service';
 import { PwaInstallService } from '../../../core/pwa-install.service';
@@ -10,6 +10,7 @@ import { AuthService } from '../../../services/auth.service';
 import { NotificacionService } from '../../../services/notificacion.service';
 import { TaskService } from '../../../services/task.service';
 import { TaskTypeService } from '../../../services/taskType.service';
+import { ScheduleService } from '../../../services/schedule.service';
 import { Task } from '../../../models/task.model';
 
 @Component({
@@ -27,9 +28,18 @@ export class SidebarComponent implements OnInit {
   private notificacionService = inject(NotificacionService);
   private taskService = inject(TaskService);
   private taskTypeService = inject(TaskTypeService);
+  private scheduleService = inject(ScheduleService);
 
   private tareasPerdidas = toSignal(this.taskService.watchLostTasks(), { initialValue: [] as Task[] });
   lostCount = computed(() => this.tareasPerdidas().filter((t) => t.estado !== 'realizado').length);
+
+  // Actividad actual del itinerario
+  currentActivity = toSignal(
+    this.scheduleService.getCurrentBlock().pipe(
+      startWith({ block: null, activity: null })
+    ),
+    { initialValue: { block: null, activity: null } }
+  );
 
   @ViewChild('notifDropdown') notifDropdownRef: ElementRef | undefined;
 

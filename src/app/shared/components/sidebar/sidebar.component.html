@@ -82,6 +82,24 @@
 
   <div class="flex-1"></div>
 
+  <!-- Actividad actual (desde Itinerario) -->
+  <div *ngIf="currentActivity().activity && currentActivity().block" class="px-3 mb-3">
+    <div
+      class="p-2 rounded-lg text-xs font-medium text-white flex items-center gap-2 border-l-4"
+      [style.background-color]="currentActivity().activity!.color + '80'"
+      [style.border-left-color]="currentActivity().activity!.color"
+    >
+      <span class="material-icons text-sm">schedule</span>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold truncate text-xs">{{ currentActivity().activity!.nombre }}</p>
+        <p class="text-xs opacity-90 leading-tight">
+          {{ currentActivity().block!.horaInicio.toString().padStart(2, '0') }}:00 —
+          {{ (currentActivity().block!.horaInicio + currentActivity().block!.duracion).toString().padStart(2, '0') }}:00
+        </p>
+      </div>
+    </div>
+  </div>
+
   <!-- Instalar app (solo aparece si el navegador lo permite — Chrome/Edge/Android) -->
   <div *ngIf="pwaInstall.canInstall()" class="px-3 mb-1">
     <button
