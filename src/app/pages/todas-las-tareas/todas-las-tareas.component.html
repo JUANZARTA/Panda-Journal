@@ -1,3 +1,44 @@
+<div class="relative">
+  <!-- Gráfica donut fija al lado derecho -->
+  <div *ngIf="filas().length > 0" class="fixed right-4 top-6 z-40">
+    <div class="bg-paper-raised rounded-lg shadow-page p-4 w-32 h-32 flex items-center justify-center">
+      <svg class="w-24 h-24" viewBox="0 0 100 100" style="overflow: visible;">
+        <!-- Círculo gris de fondo (pendiente) -->
+        <circle cx="50" cy="50" r="35" fill="none" stroke="#d0ccc7" stroke-width="11" />
+
+        <!-- Círculo verde (completado) con dasharray -->
+        <circle
+          cx="50"
+          cy="50"
+          r="35"
+          fill="none"
+          stroke="#6BCB77"
+          stroke-width="11"
+          stroke-dasharray="219.9"
+          [style.stroke-dashoffset.px]="219.9 * (1 - progreso() / 100)"
+          stroke-linecap="round"
+          transform="rotate(-90 50 50)"
+        />
+
+        <!-- Círculo blanco en el centro -->
+        <circle cx="50" cy="50" r="20" fill="white" />
+
+        <!-- Porcentaje en el centro -->
+        <text
+          x="50"
+          y="57"
+          text-anchor="middle"
+          fill="#1a1a1a"
+          font-size="20"
+          font-weight="bold"
+          font-family="system-ui"
+        >
+          {{ progreso() }}%
+        </text>
+      </svg>
+    </div>
+  </div>
+
 <div class="max-w-3xl mx-auto px-4 md:px-0 py-6 md:py-12">
   <div class="text-center mb-6">
     <p class="font-hand text-4xl md:text-5xl text-ink">Todas las tareas</p>
