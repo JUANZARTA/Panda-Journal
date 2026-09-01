@@ -76,6 +76,53 @@
       >
         Incompletas
       </button>
+
+      <span class="w-px h-5 bg-paper-line mx-1 self-center"></span>
+
+      <!-- Botón Categorías con dropdown -->
+      <div class="relative">
+        <button
+          (click)="abrirDropdownCategorias()"
+          class="text-xs font-semibold px-3 py-1.5 rounded-full border transition flex items-center gap-1"
+          [class.bg-accent]="categoriasSeleccionadas().size > 0"
+          [class.text-white]="categoriasSeleccionadas().size > 0"
+          [class.border-accent]="categoriasSeleccionadas().size > 0"
+          [class.text-ink-faint]="categoriasSeleccionadas().size === 0"
+          [class.border-paper-line]="categoriasSeleccionadas().size === 0"
+        >
+          <span class="material-icons" style="font-size: 14px">category</span>
+          Categorías
+          <span class="material-icons text-xs">{{ mostrarDropdownCategorias ? 'expand_less' : 'expand_more' }}</span>
+        </button>
+
+        <!-- Dropdown de categorías -->
+        <div
+          *ngIf="mostrarDropdownCategorias"
+          class="absolute top-full left-0 mt-1 bg-paper-raised border border-paper-line rounded-lg shadow-page z-10 min-w-max"
+        >
+          <div class="p-2 max-h-64 overflow-y-auto">
+            <div *ngFor="let cat of categorias()" class="flex items-center gap-2 py-1.5 px-2 hover:bg-paper-line/30 rounded cursor-pointer" (click)="toggleCategoriaFiltro(cat.id)">
+              <input
+                type="checkbox"
+                [checked]="estaCategoriaSeleccionada(cat.id)"
+                (change)="toggleCategoriaFiltro(cat.id)"
+                class="w-4 h-4 rounded cursor-pointer"
+              />
+              <label class="flex-1 cursor-pointer text-xs font-medium text-ink">
+                {{ cat.nombre }}
+              </label>
+            </div>
+          </div>
+          <div *ngIf="categoriasSeleccionadas().size > 0" class="border-t border-paper-line p-2">
+            <button
+              (click)="limpiarFiltrocategorias()"
+              class="text-xs text-accent hover:underline w-full text-left"
+            >
+              Limpiar filtro
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="flex flex-wrap items-center gap-3 text-sm text-ink-soft">
@@ -115,26 +162,9 @@
     </div>
   </div>
 
-  <!-- Lista agrupada por categoría -->
+  <!-- Lista de tareas -->
   <div class="notebook-page rounded-lg shadow-page px-5 md:px-8 py-5">
-    <div *ngFor="let categoria of categoriasConTareas()" class="mb-4 last:mb-0">
-      <!-- Encabezado de categoría (clickeable) -->
-      <button
-        (click)="toggleCategoriaExpandida(categoria.id)"
-        class="w-full text-left font-semibold text-ink mb-2 text-sm flex items-center gap-2 px-2 py-1 rounded hover:bg-paper-line/30 transition"
-      >
-        <span class="material-icons text-sm" style="color: var(--color-ink-faint)">
-          {{ estaCategoriaExpandida(categoria.id) ? 'folder_open' : 'folder' }}
-        </span>
-        <span class="flex-1">{{ categoria.nombre }}</span>
-        <span class="material-icons text-xs" style="color: var(--color-ink-faint)">
-          {{ estaCategoriaExpandida(categoria.id) ? 'expand_less' : 'expand_more' }}
-        </span>
-      </button>
-
-      <!-- Tareas de esta categoría (mostrar/ocultar según expandida) -->
-      <div *ngIf="estaCategoriaExpandida(categoria.id)">
-        <div *ngFor="let fila of tareasPorCategoria().get(categoria.id) || []; trackBy: trackByFila" class="flex flex-wrap items-start gap-3 py-2 ml-4 border-b border-paper-line last:border-0 group">
+    <div *ngFor="let fila of filas(); trackBy: trackByFila" class="flex flex-wrap items-start gap-3 py-2 border-b border-paper-line last:border-0 group">
       <button
         (click)="toggle(fila)"
         class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
@@ -199,8 +229,6 @@
           </button>
         </div>
       </ng-template>
-        </div>
-      </div>
     </div>
 
     <div *ngIf="filas().length === 0" class="text-center text-ink-faint py-8 text-sm">

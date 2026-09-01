@@ -46,6 +46,10 @@ export default class TodasLasTareasComponent {
   // Filtro por estado
   filtroEstado = signal<'todas' | 'completas' | 'incompletas'>('todas');
 
+  // Filtro por categoría (dropdown)
+  categoriasSeleccionadas = signal<Set<string>>(new Set());
+  mostrarDropdownCategorias = false;
+
   filas = computed<Fila[]>(() => {
     const filas: Fila[] = [];
 
@@ -70,34 +74,18 @@ export default class TodasLasTareasComponent {
         if (estado === 'incompletas') return f.task.estado !== 'realizado';
         return true;
       })
+      .filter((f) => {
+        // Si no hay categorías seleccionadas, mostrar todas
+        const categoriasSeleccionadas = this.categoriasSeleccionadas();
+        if (categoriasSeleccionadas.size === 0) return true;
+        return categoriasSeleccionadas.has(f.task.categoriaId);
+      })
       .sort((a, b) => {
         if (a.fecha === b.fecha) return 0;
         if (!a.fecha) return -1;
         if (!b.fecha) return 1;
         return a.fecha < b.fecha ? -1 : 1;
       });
-  });
-
-  // Agrupar tareas por categoría
-  tareasPorCategoria = computed(() => {
-    const map = new Map<string, Fila[]>();
-
-    this.filas().forEach((fila) => {
-      const catId = fila.task.categoriaId;
-      if (!map.has(catId)) {
-        map.set(catId, []);
-      }
-      map.get(catId)!.push(fila);
-    });
-
-    return map;
-  });
-
-  // Lista de categorías ordenadas por nombre (para mostrar en el orden correcto)
-  categoriasConTareas = computed(() => {
-    return this.categorias()
-      .filter((cat) => this.tareasPorCategoria().has(cat.id))
-      .sort((a, b) => a.nombre.localeCompare(b.nombre));
   });
 
   progreso = computed(() => {
@@ -109,9 +97,6 @@ export default class TodasLasTareasComponent {
 
   reasignandoId = '';
   fechaNueva = '';
-
-  // Categorías expandidas/contraídas
-  categoriasExpandidas = signal<Set<string>>(new Set());
 
   // -------- Selector "Cambiar mes" (año → mes), estilo Kontrol Cash --------
   // Nota: Angular no permite "ñ" en identificadores usados dentro de expresiones
@@ -238,18 +223,30 @@ export default class TodasLasTareasComponent {
     return `${anio}-${String(mes).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`;
   }
 
-  toggleCategoriaExpandida(categoriaId: string): void {
-    const actual = this.categoriasExpandidas();
+  abrirDropdownCategorias(): void {
+    this.mostrarDropdownCategorias = !this.mostrarDropdownCategorias;
+  }
+
+  cerrarDropdownCategorias(): void {
+    this.mostrarDropdownCategorias = false;
+  }
+
+  toggleCategoriaFiltro(categoriaId: string): void {
+    const actual = this.categoriasSeleccionadas();
     const nuevo = new Set(actual);
     if (nuevo.has(categoriaId)) {
       nuevo.delete(categoriaId);
     } else {
       nuevo.add(categoriaId);
     }
-    this.categoriasExpandidas.set(nuevo);
+    this.categoriasSeleccionadas.set(nuevo);
   }
 
-  estaCategoriaExpandida(categoriaId: string): boolean {
-    return this.categoriasExpandidas().has(categoriaId);
+  estaCategoriaSeleccionada(categoriaId: string): boolean {
+    return this.categoriasSeleccionadas().has(categoriaId);
+  }
+
+  limpiarFiltrocategorias(): void {
+    this.categoriasSeleccionadas.set(new Set());
   }
 }
