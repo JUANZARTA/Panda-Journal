@@ -115,9 +115,26 @@
     </div>
   </div>
 
-  <!-- Lista -->
+  <!-- Lista agrupada por categoría -->
   <div class="notebook-page rounded-lg shadow-page px-5 md:px-8 py-5">
-    <div *ngFor="let fila of filas(); trackBy: trackByFila" class="flex flex-wrap items-start gap-3 py-2 border-b border-paper-line last:border-0 group">
+    <div *ngFor="let categoria of categoriasConTareas()" class="mb-4 last:mb-0">
+      <!-- Encabezado de categoría (clickeable) -->
+      <button
+        (click)="toggleCategoriaExpandida(categoria.id)"
+        class="w-full text-left font-semibold text-ink mb-2 text-sm flex items-center gap-2 px-2 py-1 rounded hover:bg-paper-line/30 transition"
+      >
+        <span class="material-icons text-sm" style="color: var(--color-ink-faint)">
+          {{ estaCategoriaExpandida(categoria.id) ? 'folder_open' : 'folder' }}
+        </span>
+        <span class="flex-1">{{ categoria.nombre }}</span>
+        <span class="material-icons text-xs" style="color: var(--color-ink-faint)">
+          {{ estaCategoriaExpandida(categoria.id) ? 'expand_less' : 'expand_more' }}
+        </span>
+      </button>
+
+      <!-- Tareas de esta categoría (mostrar/ocultar según expandida) -->
+      <div *ngIf="estaCategoriaExpandida(categoria.id)">
+        <div *ngFor="let fila of tareasPorCategoria().get(categoria.id) || []; trackBy: trackByFila" class="flex flex-wrap items-start gap-3 py-2 ml-4 border-b border-paper-line last:border-0 group">
       <button
         (click)="toggle(fila)"
         class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
@@ -182,6 +199,8 @@
           </button>
         </div>
       </ng-template>
+        </div>
+      </div>
     </div>
 
     <div *ngIf="filas().length === 0" class="text-center text-ink-faint py-8 text-sm">

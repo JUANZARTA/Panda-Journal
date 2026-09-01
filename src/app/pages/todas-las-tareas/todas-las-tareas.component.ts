@@ -39,8 +39,9 @@ export default class TodasLasTareasComponent {
   mostrarPerdidas = signal(true);
 
   // Filtro por fecha (aplica a 'cuaderno' y 'perdidas' — 'otras' no tiene fecha)
-  fechaDesde = signal('');
-  fechaHasta = signal('');
+  // Por defecto: mes actual
+  fechaDesde = signal(this.obtenerPrimerDiaDelMes());
+  fechaHasta = signal(this.obtenerUltimoDiaDelMes());
 
   // Filtro por estado
   filtroEstado = signal<'todas' | 'completas' | 'incompletas'>('todas');
@@ -77,6 +78,28 @@ export default class TodasLasTareasComponent {
       });
   });
 
+  // Agrupar tareas por categoría
+  tareasPorCategoria = computed(() => {
+    const map = new Map<string, Fila[]>();
+
+    this.filas().forEach((fila) => {
+      const catId = fila.task.categoriaId;
+      if (!map.has(catId)) {
+        map.set(catId, []);
+      }
+      map.get(catId)!.push(fila);
+    });
+
+    return map;
+  });
+
+  // Lista de categorías ordenadas por nombre (para mostrar en el orden correcto)
+  categoriasConTareas = computed(() => {
+    return this.categorias()
+      .filter((cat) => this.tareasPorCategoria().has(cat.id))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  });
+
   progreso = computed(() => {
     const total = this.filas().length;
     if (total === 0) return 0;
@@ -86,6 +109,9 @@ export default class TodasLasTareasComponent {
 
   reasignandoId = '';
   fechaNueva = '';
+
+  // Categorías expandidas/contraídas
+  categoriasExpandidas = signal<Set<string>>(new Set());
 
   // -------- Selector "Cambiar mes" (año → mes), estilo Kontrol Cash --------
   // Nota: Angular no permite "ñ" en identificadores usados dentro de expresiones
@@ -195,5 +221,35 @@ export default class TodasLasTareasComponent {
     if (this.fechaDesde() && fecha < this.fechaDesde()) return false;
     if (this.fechaHasta() && fecha > this.fechaHasta()) return false;
     return true;
+  }
+
+  private obtenerPrimerDiaDelMes(): string {
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const mes = hoy.getMonth() + 1;
+    return `${anio}-${String(mes).padStart(2, '0')}-01`;
+  }
+
+  private obtenerUltimoDiaDelMes(): string {
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const mes = hoy.getMonth() + 1;
+    const ultimoDia = new Date(anio, mes, 0).getDate();
+    return `${anio}-${String(mes).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`;
+  }
+
+  toggleCategoriaExpandida(categoriaId: string): void {
+    const actual = this.categoriasExpandidas();
+    const nuevo = new Set(actual);
+    if (nuevo.has(categoriaId)) {
+      nuevo.delete(categoriaId);
+    } else {
+      nuevo.add(categoriaId);
+    }
+    this.categoriasExpandidas.set(nuevo);
+  }
+
+  estaCategoriaExpandida(categoriaId: string): boolean {
+    return this.categoriasExpandidas().has(categoriaId);
   }
 }
