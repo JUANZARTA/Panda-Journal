@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -27,6 +27,9 @@ interface Fila {
 export default class TodasLasTareasComponent {
   private taskTypeService = inject(TaskTypeService);
   private taskService = inject(TaskService);
+  private elementRef = inject(ElementRef);
+
+  @ViewChild('dropdownCategorias') dropdownCategorias: any;
 
   categorias = toSignal(this.taskTypeService.getAllTaskTypes(), { initialValue: [] as TaskType[] });
   private cuaderno = toSignal(this.taskService.watchAllDatedTasks(), { initialValue: [] as TaskConFecha[] });
@@ -48,7 +51,8 @@ export default class TodasLasTareasComponent {
 
   // Filtro por categoría (dropdown)
   categoriasSeleccionadas = signal<Set<string>>(new Set());
-  mostrarDropdownCategorias = false;
+  mostrarDropdownCategorias = signal(false);
+  dropdownAcabaDeAbrirse = false;
 
   filas = computed<Fila[]>(() => {
     const filas: Fila[] = [];
@@ -88,6 +92,28 @@ export default class TodasLasTareasComponent {
       });
   });
 
+  // Agrupar tareas por categoría (después del filtro de categoría)
+  tareasPorCategoria = computed(() => {
+    const map = new Map<string, Fila[]>();
+
+    this.filas().forEach((fila) => {
+      const catId = fila.task.categoriaId;
+      if (!map.has(catId)) {
+        map.set(catId, []);
+      }
+      map.get(catId)!.push(fila);
+    });
+
+    return map;
+  });
+
+  // Lista de categorías ordenadas por nombre (que tienen tareas filtradas)
+  categoriasConTareas = computed(() => {
+    return this.categorias()
+      .filter((cat) => this.tareasPorCategoria().has(cat.id))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  });
+
   progreso = computed(() => {
     const total = this.filas().length;
     if (total === 0) return 0;
@@ -97,6 +123,22 @@ export default class TodasLasTareasComponent {
 
   reasignandoId = '';
   fechaNueva = '';
+
+  // Categorías expandidas/contraídas (tree view)
+  categoriasExpandidas = signal<Set<string>>(new Set());
+
+  // Si el dropdown está abierto, mostrar todas las categorías expandidas
+  // Si no, usar el estado guardado en categoriasExpandidas
+  categoriasParaMostrarExpandidas = computed(() => {
+    if (this.mostrarDropdownCategorias()) {
+      const expandidas = new Set<string>();
+      this.categoriasConTareas().forEach((cat) => {
+        expandidas.add(cat.id);
+      });
+      return expandidas;
+    }
+    return this.categoriasExpandidas();
+  });
 
   // -------- Selector "Cambiar mes" (año → mes), estilo Kontrol Cash --------
   // Nota: Angular no permite "ñ" en identificadores usados dentro de expresiones
@@ -224,11 +266,11 @@ export default class TodasLasTareasComponent {
   }
 
   abrirDropdownCategorias(): void {
-    this.mostrarDropdownCategorias = !this.mostrarDropdownCategorias;
+    this.mostrarDropdownCategorias.set(!this.mostrarDropdownCategorias());
   }
 
   cerrarDropdownCategorias(): void {
-    this.mostrarDropdownCategorias = false;
+    this.mostrarDropdownCategorias.set(false);
   }
 
   toggleCategoriaFiltro(categoriaId: string): void {
@@ -248,5 +290,33 @@ export default class TodasLasTareasComponent {
 
   limpiarFiltrocategorias(): void {
     this.categoriasSeleccionadas.set(new Set());
+  }
+
+  toggleCategoriaExpandida(categoriaId: string): void {
+    const actual = this.categoriasExpandidas();
+    const nuevo = new Set(actual);
+    if (nuevo.has(categoriaId)) {
+      nuevo.delete(categoriaId);
+    } else {
+      nuevo.add(categoriaId);
+    }
+    this.categoriasExpandidas.set(nuevo);
+  }
+
+  estaCategoriaExpandida(categoriaId: string): boolean {
+    return this.categoriasExpandidas().has(categoriaId);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    // No cerrar si el dropdown acaba de abrirse
+    if (this.dropdownAcabaDeAbrirse) return;
+
+    const target = event.target as HTMLElement;
+    const dropdownElement = this.elementRef.nativeElement.querySelector('[data-dropdown-categorias]');
+
+    if (dropdownElement && !dropdownElement.contains(target)) {
+      this.cerrarDropdownCategorias();
+    }
   }
 }
