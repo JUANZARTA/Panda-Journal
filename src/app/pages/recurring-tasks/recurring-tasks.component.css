@@ -35,3 +35,23 @@
 .toggle-checkbox:checked + .toggle-slider::before {
   left: 26px;
 }
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.icon-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.icon-btn .material-icons {
+  font-size: 20px;
+}

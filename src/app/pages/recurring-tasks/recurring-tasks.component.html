@@ -71,7 +71,7 @@
         </div>
 
         <!-- Botones -->
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
           <button
             *ngIf="editando() === task.id"
             (click)="guardarEdicion(task.id)"
@@ -90,9 +90,10 @@
           <button
             *ngIf="editando() !== task.id"
             (click)="iniciarEdicion(task)"
-            class="px-3 py-2 bg-accent-soft text-ink rounded text-sm font-semibold hover:opacity-90"
+            class="icon-btn text-accent hover:text-accent/70"
+            title="Editar"
           >
-            Editar
+            <span class="material-icons">edit</span>
           </button>
 
           <label class="flex items-center gap-2 cursor-pointer">
@@ -108,9 +109,10 @@
 
           <button
             (click)="eliminar(task.id)"
-            class="px-3 py-2 bg-overdue text-paper rounded text-sm font-semibold hover:opacity-90"
+            class="icon-btn text-overdue hover:text-overdue/70"
+            title="Eliminar"
           >
-            Eliminar
+            <span class="material-icons">delete</span>
           </button>
         </div>
       </div>
