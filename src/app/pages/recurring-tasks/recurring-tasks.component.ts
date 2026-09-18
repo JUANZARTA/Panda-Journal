@@ -26,19 +26,27 @@ export default class RecurringTasksComponent {
   editando = signal<string | null>(null);
   editNombre = signal('');
   editCategoria = signal('');
+  creando = signal(false);
 
   agregarTarea(): void {
+    if (this.creando()) return;
+
     const nombre = this.nuevoNombre().trim();
     const categoriaId = this.categoriaSelecionada().trim();
 
     if (!nombre || !categoriaId) return;
 
+    this.creando.set(true);
     this.recurringTaskService.create(nombre, categoriaId).subscribe({
       next: () => {
         this.nuevoNombre.set('');
         this.categoriaSelecionada.set('');
+        this.creando.set(false);
       },
-      error: (err) => console.error('Error al crear tarea recurrente:', err),
+      error: (err) => {
+        console.error('Error al crear tarea recurrente:', err);
+        this.creando.set(false);
+      },
     });
   }
 
