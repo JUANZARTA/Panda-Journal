@@ -6,6 +6,7 @@ import { combineLatest, take, startWith } from 'rxjs';
 
 import { UiStateService } from '../../../core/ui-state.service';
 import { PwaInstallService } from '../../../core/pwa-install.service';
+import { APP_VERSION } from '../../../core/version';
 import { AuthService } from '../../../services/auth.service';
 import { NotificacionService } from '../../../services/notificacion.service';
 import { TaskService } from '../../../services/task.service';
@@ -29,6 +30,8 @@ export class SidebarComponent implements OnInit {
   private taskService = inject(TaskService);
   private taskTypeService = inject(TaskTypeService);
   private scheduleService = inject(ScheduleService);
+
+  version = APP_VERSION;
 
   private tareasPerdidas = toSignal(this.taskService.watchLostTasks(), { initialValue: [] as Task[] });
   lostCount = computed(() => this.tareasPerdidas().filter((t) => t.estado !== 'realizado').length);
