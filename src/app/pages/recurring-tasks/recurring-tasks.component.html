@@ -30,7 +30,7 @@
 
         <button
           (click)="agregarTarea()"
-          class="px-6 py-2 bg-accent text-ink font-semibold rounded hover:opacity-90 transition"
+          class="px-6 py-2 bg-accent-soft text-ink font-semibold rounded hover:opacity-90 transition"
         >
           Agregar
         </button>
@@ -90,7 +90,7 @@
           <button
             *ngIf="editando() !== task.id"
             (click)="iniciarEdicion(task)"
-            class="px-3 py-2 bg-accent text-ink rounded text-sm font-semibold hover:opacity-90"
+            class="px-3 py-2 bg-accent-soft text-ink rounded text-sm font-semibold hover:opacity-90"
           >
             Editar
           </button>
