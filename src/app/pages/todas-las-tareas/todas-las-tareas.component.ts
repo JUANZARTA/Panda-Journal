@@ -123,6 +123,8 @@ export default class TodasLasTareasComponent {
 
   reasignandoId = '';
   fechaNueva = '';
+  editandoId = '';
+  editandoNombre = '';
 
   // Categorías expandidas/contraídas (tree view)
   categoriasExpandidas = signal<Set<string>>(new Set());
@@ -305,6 +307,37 @@ export default class TodasLasTareasComponent {
 
   estaCategoriaExpandida(categoriaId: string): boolean {
     return this.categoriasExpandidas().has(categoriaId);
+  }
+
+  empezarEdicion(task: Task, origen: Origen): void {
+    this.editandoId = task.id;
+    this.editandoNombre = task.nombre;
+  }
+
+  guardarEdicion(task: Task, origen: Origen): void {
+    if (!this.editandoNombre.trim()) return;
+
+    if (origen === 'cuaderno') {
+      this.taskService.updateTask(task.id, { nombre: this.editandoNombre }).subscribe({
+        next: () => this.cancelarEdicion(),
+        error: (err) => console.error('[ERROR] Al actualizar tarea:', err),
+      });
+    } else if (origen === 'otras') {
+      this.taskService.updateUndatedTask(task.id, this.editandoNombre).subscribe({
+        next: () => this.cancelarEdicion(),
+        error: (err) => console.error('[ERROR] Al actualizar tarea:', err),
+      });
+    } else if (origen === 'perdidas') {
+      this.taskService.updateLostTask(task.id, this.editandoNombre).subscribe({
+        next: () => this.cancelarEdicion(),
+        error: (err) => console.error('[ERROR] Al actualizar tarea:', err),
+      });
+    }
+  }
+
+  cancelarEdicion(): void {
+    this.editandoId = '';
+    this.editandoNombre = '';
   }
 
   @HostListener('document:click', ['$event'])

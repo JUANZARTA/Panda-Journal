@@ -75,6 +75,10 @@ export class TaskService {
     });
   }
 
+  updateUndatedTask(taskId: string, nombre: string): Observable<void> {
+    return this.repo.updateUndated(taskId, { nombre: nombre.trim() });
+  }
+
   /** Le pone fecha a una tarea de "Otras tareas" — se muda a la página de ese día. */
   assignDate(task: Task, fecha: string): Observable<void> {
     return this.repo.assignDate(task, fecha);
@@ -94,6 +98,10 @@ export class TaskService {
     return this.repo.updateLost(task.id, {
       estado: task.estado === 'realizado' ? 'pendiente' : 'realizado',
     });
+  }
+
+  updateLostTask(taskId: string, nombre: string): Observable<void> {
+    return this.repo.updateLost(taskId, { nombre: nombre.trim() });
   }
 
   /** Reasigna una tarea perdida a una fecha nueva — vuelve a la página de ese día. */

@@ -36,6 +36,8 @@ export default class OtrasTareasComponent {
   nuevoTaskTexto: Record<string, string> = {};
   asignandoFechaId = '';
   fechaElegida = '';
+  editandoId = '';
+  editandoNombre = '';
 
   trackById(_index: number, item: TaskType): string {
     return item.id;
@@ -81,5 +83,23 @@ export default class OtrasTareasComponent {
       next: () => this.cancelarAsignarFecha(),
       error: (err) => console.error('[ERROR] Al asignar fecha:', err),
     });
+  }
+
+  empezarEdicion(task: Task): void {
+    this.editandoId = task.id;
+    this.editandoNombre = task.nombre;
+  }
+
+  guardarEdicion(task: Task): void {
+    if (!this.editandoNombre.trim()) return;
+    this.taskService.updateUndatedTask(task.id, this.editandoNombre).subscribe({
+      next: () => this.cancelarEdicion(),
+      error: (err) => console.error('[ERROR] Al actualizar tarea:', err),
+    });
+  }
+
+  cancelarEdicion(): void {
+    this.editandoId = '';
+    this.editandoNombre = '';
   }
 }
