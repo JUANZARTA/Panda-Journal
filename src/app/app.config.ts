@@ -13,6 +13,8 @@ import { CategoryRepository } from './data-access/repositories/category.reposito
 import { FirebaseCategoryRepository } from './data-access/repositories/category.repository.firebase';
 import { TaskRepository } from './data-access/repositories/task.repository';
 import { FirebaseTaskRepository } from './data-access/repositories/task.repository.firebase';
+import { RecurringTaskRepository } from './data-access/repositories/recurring-task.repository';
+import { FirebaseRecurringTaskRepository } from './data-access/repositories/recurring-task.repository.firebase';
 import { provideServiceWorker } from '@angular/service-worker';
 
 // Auth y Database tocan indexedDB/localStorage al inicializarse — en SSR (Node) eso
@@ -31,6 +33,7 @@ export const appConfig: ApplicationConfig = {
     // acá se cambia useClass por la implementación HTTP — nada más se toca.
     { provide: CategoryRepository, useClass: FirebaseCategoryRepository },
     { provide: TaskRepository, useClass: FirebaseTaskRepository },
+    { provide: RecurringTaskRepository, useClass: FirebaseRecurringTaskRepository },
     // registerWhenStable esperaba a que la zona de Angular quede sin tareas
     // pendientes — con los listeners de Firebase corriendo todo el tiempo, eso
     // puede tardar los 30s completos antes de activar el service worker (y sin

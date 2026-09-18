@@ -1,0 +1,116 @@
+<div class="min-h-screen bg-paper p-4 md:p-8">
+  <div class="max-w-4xl mx-auto">
+    <!-- Encabezado -->
+    <div class="mb-8">
+      <p class="font-hand text-4xl md:text-5xl text-ink">Tareas Recurrentes</p>
+      <p class="text-sm text-ink-faint mt-2">Se crean automáticamente cada día</p>
+    </div>
+
+    <!-- Formulario para nueva tarea -->
+    <div class="bg-paper-raised rounded-lg border border-paper-line p-6 mb-8">
+      <h2 class="text-lg font-semibold text-ink mb-4">Crear nueva tarea recurrente</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <input
+          [(ngModel)]="nuevoNombre"
+          type="text"
+          placeholder="Nombre de la tarea"
+          class="px-4 py-2 border border-paper-line rounded bg-paper text-ink placeholder-ink-faint focus:outline-none focus:border-accent"
+        />
+
+        <select
+          [(ngModel)]="categoriaSelecionada"
+          class="px-4 py-2 border border-paper-line rounded bg-paper text-ink focus:outline-none focus:border-accent"
+        >
+          <option value="">Selecciona categoría</option>
+          <option *ngFor="let cat of categories()" [value]="cat.id">
+            {{ cat.nombre }}
+          </option>
+        </select>
+
+        <button
+          (click)="agregarTarea()"
+          class="px-6 py-2 bg-accent text-ink font-semibold rounded hover:opacity-90 transition"
+        >
+          Agregar
+        </button>
+      </div>
+    </div>
+
+    <!-- Listado de tareas recurrentes -->
+    <div class="space-y-3">
+      <div *ngIf="tasks().length === 0" class="text-center py-8 text-ink-faint">
+        No tienes tareas recurrentes configuradas
+      </div>
+
+      <div
+        *ngFor="let task of tasks()"
+        class="bg-paper-raised rounded-lg border border-paper-line p-4 flex items-center justify-between gap-4"
+        [class.opacity-60]="!task.activo"
+      >
+        <!-- Contenido editable o vista normal -->
+        <div *ngIf="editando() !== task.id" class="flex-1">
+          <p class="text-ink font-semibold">{{ task.nombre }}</p>
+          <p class="text-sm text-ink-faint">{{ getNombreCategoria(task.categoriaId) }}</p>
+        </div>
+
+        <div *ngIf="editando() === task.id" class="flex-1 grid grid-cols-2 gap-2">
+          <input
+            [(ngModel)]="editNombre"
+            type="text"
+            class="px-3 py-2 border border-paper-line rounded bg-paper text-ink text-sm focus:outline-none focus:border-accent"
+          />
+          <select
+            [(ngModel)]="editCategoria"
+            class="px-3 py-2 border border-paper-line rounded bg-paper text-ink text-sm focus:outline-none focus:border-accent"
+          >
+            <option *ngFor="let cat of categories()" [value]="cat.id">
+              {{ cat.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Botones -->
+        <div class="flex gap-2">
+          <button
+            *ngIf="editando() === task.id"
+            (click)="guardarEdicion(task.id)"
+            class="px-3 py-2 bg-done text-paper rounded text-sm font-semibold hover:opacity-90"
+          >
+            Guardar
+          </button>
+          <button
+            *ngIf="editando() === task.id"
+            (click)="cancelarEdicion()"
+            class="px-3 py-2 bg-ink-faint text-paper rounded text-sm font-semibold hover:opacity-90"
+          >
+            Cancelar
+          </button>
+
+          <button
+            *ngIf="editando() !== task.id"
+            (click)="iniciarEdicion(task)"
+            class="px-3 py-2 bg-accent text-ink rounded text-sm font-semibold hover:opacity-90"
+          >
+            Editar
+          </button>
+
+          <button
+            (click)="toggleActivo(task)"
+            [class]="task.activo ? 'bg-done' : 'bg-pending'"
+            class="px-3 py-2 text-paper rounded text-sm font-semibold hover:opacity-90"
+          >
+            {{ task.activo ? 'Activo' : 'Inactivo' }}
+          </button>
+
+          <button
+            (click)="eliminar(task.id)"
+            class="px-3 py-2 bg-overdue text-paper rounded text-sm font-semibold hover:opacity-90"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

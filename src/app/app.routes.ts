@@ -26,6 +26,7 @@ export const routes: Routes = [
       { path: 'tareas-perdidas', loadComponent: () => import('./pages/tareas-perdidas/tareas-perdidas.component') },
       { path: 'todas-las-tareas', loadComponent: () => import('./pages/todas-las-tareas/todas-las-tareas.component') },
       { path: 'itinerario', loadComponent: () => import('./pages/itinerario/itinerario.component').then(m => m.ItinerarioComponent) },
+      { path: 'tareas-recurrentes', loadComponent: () => import('./pages/recurring-tasks/recurring-tasks.component') },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },
