@@ -2,16 +2,21 @@
 
 ## Comandos
 
+**Despliegue a GitHub Pages:**
+
 ```powershell
-# Elimina por completo la carpeta 'dist' para asegurarte de que el nuevo build sea limpio
-Remove-Item -Recurse -Force .\dist
-
-# Compila el proyecto Angular en modo producción con el baseHref correcto para GitHub Pages
-ng build --configuration production
-
-# Publica el contenido de 'dist/panda-journal' directamente al branch 'gh-pages' de GitHub
-ng build --configuration production --base-href=/Panda-Journal/
+npm run build; npx angular-cli-ghpages --dir=dist/panda-journal
 ```
+
+O en bash:
+
+```bash
+npm run build && npx angular-cli-ghpages --dir=dist/panda-journal
+```
+
+**Detalles:**
+- `npm run build` — compila Angular con baseHref correcto + copia index.html como 404.html
+- `angular-cli-ghpages` — publica dist/panda-journal al branch gh-pages automáticamente
 
 ## IMPORTANTE: si renombrás el repo de GitHub
 
