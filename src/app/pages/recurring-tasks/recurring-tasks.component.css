@@ -1,3 +1,37 @@
 :host {
   display: block;
 }
+
+.toggle-checkbox {
+  display: none;
+}
+
+.toggle-slider {
+  display: inline-block;
+  position: relative;
+  width: 48px;
+  height: 24px;
+  background-color: var(--ink-faint);
+  border-radius: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  top: 2px;
+  left: 2px;
+  transition: left 0.3s ease;
+}
+
+.toggle-checkbox:checked + .toggle-slider {
+  background-color: var(--done);
+}
+
+.toggle-checkbox:checked + .toggle-slider::before {
+  left: 26px;
+}

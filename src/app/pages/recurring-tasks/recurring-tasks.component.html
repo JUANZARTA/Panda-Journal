@@ -95,13 +95,16 @@
             Editar
           </button>
 
-          <button
-            (click)="toggleActivo(task)"
-            [class]="task.activo ? 'bg-done' : 'bg-pending'"
-            class="px-3 py-2 text-paper rounded text-sm font-semibold hover:opacity-90"
-          >
-            {{ task.activo ? 'Activo' : 'Inactivo' }}
-          </button>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              [checked]="task.activo"
+              (change)="toggleActivo(task)"
+              class="toggle-checkbox"
+            />
+            <span class="toggle-slider"></span>
+            <span class="text-sm text-ink-soft">{{ task.activo ? 'Activo' : 'Inactivo' }}</span>
+          </label>
 
           <button
             (click)="eliminar(task.id)"
