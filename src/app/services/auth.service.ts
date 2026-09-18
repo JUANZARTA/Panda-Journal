@@ -14,6 +14,7 @@ import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
   getRedirectResult as fbGetRedirectResult,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithRedirect,
   signOut,
@@ -101,37 +102,20 @@ export class AuthService {
   startAutoLogout(): () => void {
     if (!this.isBrowser) return () => {};
 
-    // Auto-logout deshabilitado — sin límite de sesión activa
-    // Código comentado para posible reutilización:
-    /*
-    let timer: ReturnType<typeof setTimeout>;
-    const abortController = new AbortController();
-    const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutos
+    // Detector de sesión inválida — detecta cuando Firebase rechaza operaciones
+    // Si el localStorage dice que hay sesión pero Firebase dice que no, logout automático
+    const unsubscribe = onAuthStateChanged(this.auth, (user) => {
+      const hasLocalSession = !!localStorage.getItem('user');
 
-    const resetTimer = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
+      if (!user && hasLocalSession) {
+        // Sesión en localStorage pero no en Firebase → logout automático
         this.logout();
         window.location.href = `${document.baseURI}login`;
-      }, INACTIVITY_TIMEOUT);
-    };
-
-    const events = ['mousemove', 'keydown', 'click', 'touchstart'];
-    events.forEach((event) => {
-      window.addEventListener(event, resetTimer, { signal: abortController.signal });
+      }
     });
 
-    resetTimer();
-
     // Devuelve función de cleanup
-    return () => {
-      clearTimeout(timer);
-      abortController.abort();
-    };
-    */
-
-    // Devuelve cleanup vacío (auto-logout deshabilitado)
-    return () => {};
+    return () => unsubscribe();
   }
 
   // ==================
