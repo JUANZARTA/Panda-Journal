@@ -65,14 +65,16 @@ export class RecurringTaskService {
 
         return this.taskRepo.watchByDate(today).pipe(
           map((existingTasks) => {
-            // Filtra qué recurrencias no tienen tarea creada HOY
+            // Solo crea si NO existe tarea con igual nombre + categoría
             return recurringTasks.filter((recurring) => {
-              const exists = existingTasks.some(
+              const alreadyExists = existingTasks.some(
                 (task) =>
-                  task.nombre.toLowerCase() === recurring.nombre.toLowerCase() &&
+                  task.nombre.trim().toLowerCase() === recurring.nombre.trim().toLowerCase() &&
                   task.categoriaId === recurring.categoriaId
               );
-              return !exists;
+              // Si ya existe → no crear
+              if (alreadyExists) return false;
+              return true;
             });
           }),
           switchMap((tasksToCreate) => {
