@@ -42,10 +42,22 @@ export class RecurringTaskService {
 
   /**
    * Genera todas las tareas recurrentes activas para HOY.
-   * Se crea SOLO si no existe una tarea con el mismo nombre y categoría en el día actual.
+   * EJECUTA UNA SOLA VEZ POR DÍA — usa localStorage para guardar la última ejecución.
    */
   generateTodayRecurringTasks(): Observable<void> {
     const today = formatDate(new Date());
+    const storageKey = 'recurring_tasks_generated_date';
+
+    // Verifica si ya se ejecutó hoy
+    try {
+      const lastGenerated = localStorage.getItem(storageKey);
+      if (lastGenerated === today) {
+        // Ya se ejecutó hoy — no hacer nada
+        return from([undefined]);
+      }
+    } catch (err) {
+      // localStorage no disponible (SSR) — continuar
+    }
 
     return this.recurringRepo.getActive().pipe(
       switchMap((recurringTasks) => {
@@ -75,7 +87,17 @@ export class RecurringTaskService {
               })
             );
 
-            return from(Promise.all(creates)).pipe(map(() => undefined));
+            return from(Promise.all(creates)).pipe(
+              tap(() => {
+                // Marca que se ejecutó hoy
+                try {
+                  localStorage.setItem(storageKey, today);
+                } catch (err) {
+                  // localStorage no disponible
+                }
+              }),
+              map(() => undefined)
+            );
           })
         );
       })
