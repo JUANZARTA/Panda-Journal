@@ -43,32 +43,7 @@ export class LoginComponent implements OnInit {
     });
   }
 
-// Método para capturar el resultado del login con Google y redirigir si es nuevo login
-ngOnInit(): void {
-  this.authService
-    .getRedirectResult()
-    .then((result) => {
-      if (result?.user) {
-        // Verificar que la sesión fue persistida en localStorage
-        const persistedUser = this.authService.getUser();
-        if (persistedUser) {
-          this.welcomeName = result.user.displayName || 'Usuario';
-          this.showSuccessModal = true;
-
-          setTimeout(() => {
-            this.router.navigate(['app/home']);
-          }, 1000);
-        } else {
-          console.error('[ERROR] Session no fue persistida en localStorage');
-          this.showErrorModal('Error al guardar sesión. Intenta de nuevo.');
-        }
-      }
-    })
-    .catch((error) => {
-      console.error('[ERROR] En getRedirectResult:', error);
-      this.showErrorModal('Error en autenticación con Google. Intenta de nuevo.');
-    });
-}
+ngOnInit(): void {}
 
 
   isInvalid(controlName: string): boolean {
@@ -154,9 +129,25 @@ ngOnInit(): void {
     this.showPassword = !this.showPassword;
   }
 
-  // Método para iniciar sesión con Google
   onLoginWithGoogle(): void {
-    this.authService.loginWithGoogle();
+    this.showLoginOverlay = true;
+    this.authService
+      .loginWithGoogle()
+      .then((result) => {
+        if (result?.user) {
+          this.welcomeName = result.user.displayName || 'Usuario';
+          this.showSuccessModal = true;
+          setTimeout(() => {
+            this.showLoginOverlay = false;
+            this.router.navigate(['app/home']);
+          }, 1000);
+        }
+      })
+      .catch((error) => {
+        console.error('[ERROR] Google login:', error);
+        this.showLoginOverlay = false;
+        this.showErrorModal('Error en autenticación con Google. Intenta de nuevo.');
+      });
   }
 }
 

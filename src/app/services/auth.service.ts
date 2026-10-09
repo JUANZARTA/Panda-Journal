@@ -13,10 +13,9 @@ import {
   Auth,
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
-  getRedirectResult as fbGetRedirectResult,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  signInWithRedirect,
+  signInWithPopup,
   signOut,
   type UserCredential,
 } from '@angular/fire/auth';
@@ -86,17 +85,20 @@ export class AuthService {
     localStorage.setItem('user', JSON.stringify({ id: userId, email }));
   }
 
-  loginWithGoogle(): void {
-    signInWithRedirect(this.auth, new GoogleAuthProvider());
-  }
-
-  getRedirectResult(): Promise<UserCredential | null> {
-    return fbGetRedirectResult(this.auth).then((cred) => {
-      if (cred?.user) {
-        this.persistSession(cred);
-      }
-      return cred;
-    });
+  loginWithGoogle(): Promise<UserCredential> {
+    const provider = new GoogleAuthProvider();
+    return from(signInWithPopup(this.auth, provider))
+      .toPromise()
+      .then((cred) => {
+        if (cred?.user) {
+          this.persistSession(cred);
+        }
+        return cred!;
+      })
+      .catch((err) => {
+        console.error('[ERROR] Google sign-in:', err);
+        throw err;
+      });
   }
 
   startAutoLogout(): () => void {

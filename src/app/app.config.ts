@@ -40,8 +40,7 @@ export const appConfig: ApplicationConfig = {
     // service worker activo, Chrome no dispara el evento de instalar). Con
     // 'registerImmediately' se registra apenas carga la app, sin esperar nada.
     provideServiceWorker('ngsw-worker.js', {
-      enabled: !isDevMode(),
-      registrationStrategy: 'registerImmediately',
+      enabled: false,
     }),
   ],
 };
