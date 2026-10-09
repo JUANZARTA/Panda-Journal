@@ -6,8 +6,9 @@ import {
   set,
   update as dbUpdate,
   remove as dbRemove,
+  get,
 } from '@angular/fire/database';
-import { Observable, from, of, map, switchMap } from 'rxjs';
+import { Observable, from, of, map, switchMap, take, tap } from 'rxjs';
 
 import { Activity, ActivityInput, ScheduleBlock, ScheduleBlockInput } from '../models/schedule.model';
 import { AuthService } from './auth.service';
@@ -102,7 +103,11 @@ export class ScheduleService {
   updateBlock(id: string, changes: Partial<ScheduleBlockInput>): Observable<void> {
     const uid = this.getUid();
     const path = `${uid}/itinerario/blocks/${id}`;
-    return from(dbUpdate(ref(this.db, path), changes));
+
+    return from(dbUpdate(ref(this.db, path), changes)).pipe(
+      switchMap(() => from(get(ref(this.db, path)))),
+      map(() => void 0)
+    );
   }
 
   removeBlock(id: string): Observable<void> {

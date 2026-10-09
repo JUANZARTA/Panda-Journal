@@ -1,15 +1,19 @@
 <div class="notebook-page rounded-lg shadow-page p-4 md:p-6 overflow-x-auto">
   <!-- Controles superiores -->
-  <div class="mb-4 flex flex-wrap gap-2 pb-4 border-b border-paper-line">
+  <!-- <div class="mb-4 flex flex-wrap gap-2 pb-4 border-b border-paper-line">
     <button
       *ngIf="clipboard()"
       (click)="pasteBlock()"
-      class="px-3 py-1 text-sm bg-accent-soft text-ink rounded hover:bg-accent/20"
+      class="px-3 py-1 text-sm bg-accent-soft text-ink rounded hover:bg-accent/20 flex items-center gap-1"
+      [title]="'Pegar: ' + getActivityName(clipboard()?.activityId || '')"
     >
       <span class="material-icons" style="font-size: 16px; vertical-align: middle;">content_paste</span>
       Pegar
     </button>
-  </div>
+    <span *ngIf="clipboard()" class="text-xs text-ink-faint self-center">
+      Copiado: {{ getActivityName(clipboard()?.activityId || '') }} ({{ clipboard()?.duracion }}h)
+    </span>
+  </div> -->
 
   <!-- Grid container (CSS Grid) -->
   <div class="overflow-x-auto">
@@ -42,7 +46,6 @@
           cdkDropList
           [attr.data-dia]="dia"
           [attr.data-hora]="hora"
-          cdkDropListDisabled
           (cdkDropListDropped)="onBlockDragEnd($event)"
           class="relative h-10 border-r border-b border-paper-line last:border-r-0 bg-paper hover:bg-paper-raised/30 transition cursor-pointer group"
           (click)="openCreateModal(dia, hora); $event.stopPropagation()"
@@ -106,13 +109,13 @@
               *ngIf="selectedBlock()?.id === block.id"
               class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition flex gap-1"
             >
-              <button
+              <!-- <button
                 (click)="copyBlock(block); $event.stopPropagation()"
                 title="Copiar"
                 class="p-0.5 bg-black/40 hover:bg-black/60 rounded text-xs"
               >
                 <span class="material-icons" style="font-size: 14px;">content_copy</span>
-              </button>
+              </button> -->
               <button
                 (click)="deleteBlock(block); $event.stopPropagation()"
                 title="Eliminar"
@@ -172,7 +175,10 @@
 
     <!-- Actividades (ocupa TODO el espacio restante) -->
     <div class="flex-1 flex flex-col mb-3" [style.min-height]="'0'">
-      <label class="text-xs font-semibold text-ink-faint flex-shrink-0 mb-2">Actividad</label>
+      <div class="flex items-center justify-between flex-shrink-0 mb-2">
+        <label class="text-xs font-semibold text-ink-faint">Actividad</label>
+        <!-- <span *ngIf="clipboard()" class="text-xs text-accent-soft">💡 Ctrl+V para pegar</span> -->
+      </div>
       <div class="space-y-1 overflow-y-auto flex-1" [style.min-height]="'0'">
         <button
           *ngFor="let activity of activities; trackBy: trackByActivityId"

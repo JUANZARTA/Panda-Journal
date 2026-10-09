@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, computed, inject, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Activity, ScheduleBlock } from '../../../../models/schedule.model';
@@ -121,52 +121,78 @@ export class ScheduleGridComponent implements OnInit {
     this.clipboard.set(block);
   }
 
-  pasteBlock(): void {
-    const original = this.clipboard();
-    if (!original) return;
+  // pasteActivityIntoModal(): void {
+  //   const original = this.clipboard();
+  //   if (!original || !this.showCreateModal()) return;
+  //   this.selectActivityForBlock(original.activityId);
+  // }
 
-    // Crear bloque nuevo sin ID (destructuring correcto)
-    const newBlock: any = {
-      activityId: original.activityId,
-      dia: original.dia,
-      horaInicio: original.horaInicio,
-      duracion: original.duracion,
-    };
+  // pasteBlock(): void {
+  //   const original = this.clipboard();
+  //   if (!original) return;
 
-    this.scheduleService.createBlock(newBlock).subscribe({
-      next: (id) => {
-        console.log('Bloque pegado:', id);
-      },
-      error: (err) => console.error('Error pegando bloque:', err),
-    });
-  }
+  //   // Crear bloque nuevo sin ID (destructuring correcto)
+  //   const newBlock: any = {
+  //     activityId: original.activityId,
+  //     dia: original.dia,
+  //     horaInicio: original.horaInicio,
+  //     duracion: original.duracion,
+  //   };
+
+  //   this.scheduleService.createBlock(newBlock).subscribe({
+  //     next: (id) => {
+  //       console.log('Bloque pegado:', id);
+  //     },
+  //     error: (err) => console.error('Error pegando bloque:', err),
+  //   });
+  // }
+
+  // @HostListener('document:keydown', ['$event'])
+  // onKeyDown(event: KeyboardEvent): void {
+  //   const isCtrlOrCmd = event.ctrlKey || event.metaKey;
+
+  //   if (isCtrlOrCmd && event.key === 'c' && this.selectedBlock() && !this.showCreateModal()) {
+  //     event.preventDefault();
+  //     this.copyBlock(this.selectedBlock()!);
+  //   }
+
+  //   if (isCtrlOrCmd && event.key === 'v' && this.showCreateModal() && this.clipboard()) {
+  //     event.preventDefault();
+  //     this.pasteActivityIntoModal();
+  //   }
+  // }
 
   // ========== DRAG-DROP OPERATIONS ==========
 
   onBlockDragEnd(event: any): void {
-    if (!event.item || !event.item.data) return;
+    if (!event.item?.data) return;
 
     const data = event.item.data;
-    const dropZone = event.container?.element?.nativeElement?.dataset;
+    const dropElement = event.container?.element?.nativeElement;
 
-    if (!dropZone || dropZone.dia === undefined || dropZone.hora === undefined) return;
+    if (!dropElement) return;
 
-    const newDia = parseInt(dropZone.dia, 10);
-    const newHora = parseInt(dropZone.hora, 10);
+    const newDia = dropElement.getAttribute('data-dia');
+    const newHora = dropElement.getAttribute('data-hora');
+
+    if (newDia === null || newHora === null) return;
+
+    const dia = parseInt(newDia, 10);
+    const hora = parseInt(newHora, 10);
 
     // Si es un bloque, mover (con validación)
     if (data.id && data.activityId && data.duracion !== undefined) {
       const block = data as ScheduleBlock;
 
       // Validar que no haya conflictos (excluyendo el bloque actual)
-      if (!this.canPlaceBlock(newDia, newHora, block.duracion, block.id)) {
+      if (!this.canPlaceBlock(dia, hora, block.duracion, block.id)) {
         console.warn('No se puede mover: hay conflicto con otro bloque');
         return;
       }
 
       this.scheduleService.updateBlock(block.id, {
-        dia: newDia,
-        horaInicio: newHora,
+        dia,
+        horaInicio: hora,
       }).subscribe({
         error: (err) => console.error('Error moviendo bloque:', err),
       });
@@ -174,12 +200,12 @@ export class ScheduleGridComponent implements OnInit {
     // Si es una actividad, crear bloque con esa actividad
     else if (data.id && data.color && !data.estado && !data.duracion) {
       const activity = data as Activity;
-      this.createBlockFromActivity(activity, newDia, newHora);
+      this.createBlockFromActivity(activity, dia, hora);
     }
     // Si es una tarea, crear bloque automáticamente
     else if (data.nombre && data.estado) {
       const task = data as Task;
-      this.createBlockFromTask(task, newDia, newHora);
+      this.createBlockFromTask(task, dia, hora);
     }
   }
 
@@ -350,6 +376,8 @@ export class ScheduleGridComponent implements OnInit {
   openCreateModal(dia: number, hora: number): void {
     this.createModalDia.set(dia);
     this.createModalHora.set(hora);
+    // const clipboardBlock = this.clipboard();
+    // this.createModalActivityId.set(clipboardBlock ? clipboardBlock.activityId : null);
     this.createModalActivityId.set(null);
     this.createModalDuracion.set(1);
     this.showCreateModal.set(true);
