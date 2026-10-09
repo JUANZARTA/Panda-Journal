@@ -52,12 +52,6 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "headers": {
-              "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
-              "Cross-Origin-Embedder-Policy": "require-corp"
-            }
-          },
           "configurations": {
             "production": {
               "buildTarget": "panda-journal:build:production"

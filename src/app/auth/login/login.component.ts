@@ -65,14 +65,20 @@ ngOnInit(): void {}
           const uid = res.localId;
           this.loginSuccess = true; // Indica éxito
 
-          this.authService.getUserData(uid).subscribe((userData) => {
-            const nombre = userData?.nombre || '';
-            this.showWelcomeModal(nombre);
-
-            // Cerrar overlay después de 1.5s
-            setTimeout(() => {
-              this.showLoginOverlay = false;
-            }, 1500);
+          this.authService.getUserData(uid).subscribe({
+            next: (userData) => {
+              const nombre = userData?.nombre || '';
+              this.showWelcomeModal(nombre);
+              setTimeout(() => {
+                this.showLoginOverlay = false;
+              }, 1500);
+            },
+            error: () => {
+              this.showWelcomeModal('');
+              setTimeout(() => {
+                this.showLoginOverlay = false;
+              }, 1500);
+            },
           });
         },
         error: (errorMsg) => {

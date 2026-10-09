@@ -87,8 +87,7 @@ export class AuthService {
 
   loginWithGoogle(): Promise<UserCredential> {
     const provider = new GoogleAuthProvider();
-    return from(signInWithPopup(this.auth, provider))
-      .toPromise()
+    return signInWithPopup(this.auth, provider)
       .then((cred) => {
         if (cred?.user) {
           this.persistSession(cred);
