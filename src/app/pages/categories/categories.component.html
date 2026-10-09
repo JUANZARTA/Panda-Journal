@@ -20,7 +20,7 @@
   <div class="bg-paper rounded-lg shadow-lg max-w-sm w-full p-6 border border-paper-line">
     <h3 class="font-hand text-2xl text-ink mb-2 text-center">¿Eliminar categoría?</h3>
     <p class="text-ink-soft mb-6 text-sm">
-      Esta acción no se puede deshacer. Las tareas existentes quedarán como historial, pero no podrás crear nuevas tareas en esta categoría.
+      Esta acción no se puede deshacer. Se eliminarán la categoría y todas sus tareas asociadas.
     </p>
 
     <div class="flex gap-3">
@@ -51,8 +51,12 @@
         class="flex items-center gap-3 py-2.5 border-b border-paper-line last:border-0"
       >
       <ng-container *ngIf="editandoId !== categoria.id; else editando">
-        <span class="flex-1 text-ink" [class.opacity-50]="!categoria.activa">{{ categoria.nombre }}</span>
-        <button
+        <span class="flex-1 text-ink">{{ categoria.nombre }}</span>
+        <!-- TODO: Implementar activar/desactivar categoría
+             Lógica: Si una categoría está inactiva, no permitir crear nuevas tareas a partir del día siguiente de la última tarea creada en esa categoría.
+             Por ahora, este botón está comentado y no se muestra en el frontend.
+        -->
+        <!-- <button
           (click)="toggleActiva(categoria)"
           class="p-1.5 rounded hover:bg-accent-soft/60 transition"
           [title]="categoria.activa ? 'Inactivar categoría' : 'Activar categoría'"
@@ -60,7 +64,7 @@
           <span class="material-icons text-base" [class.text-accent]="categoria.activa" [class.text-ink-faint]="!categoria.activa">
             {{ categoria.activa ? 'visibility' : 'visibility_off' }}
           </span>
-        </button>
+        </button> -->
         <button (click)="empezarEdicion(categoria)" class="p-1.5 rounded hover:bg-accent-soft/60 transition">
           <span class="material-icons text-base text-ink-soft">edit</span>
         </button>

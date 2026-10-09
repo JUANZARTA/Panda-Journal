@@ -126,11 +126,11 @@ export default class TodasLasTareasComponent {
   editandoId = '';
   editandoNombre = '';
 
-  // Categorías expandidas/contraídas (tree view)
-  categoriasExpandidas = signal<Set<string>>(new Set());
+  // Categorías colapsadas (tree view) — las que NO están en este Set se muestran expandidas
+  categoriasColapsadas = signal<Set<string>>(new Set());
 
-  // Si el dropdown está abierto, mostrar todas las categorías expandidas
-  // Si no, usar el estado guardado en categoriasExpandidas
+  // Si el dropdown está abierto, mostrar todas expandidas
+  // Si no, mostrar todas excepto las colapsadas
   categoriasParaMostrarExpandidas = computed(() => {
     if (this.mostrarDropdownCategorias()) {
       const expandidas = new Set<string>();
@@ -139,7 +139,14 @@ export default class TodasLasTareasComponent {
       });
       return expandidas;
     }
-    return this.categoriasExpandidas();
+    const colapsadas = this.categoriasColapsadas();
+    const expandidas = new Set<string>();
+    this.categoriasConTareas().forEach((cat) => {
+      if (!colapsadas.has(cat.id)) {
+        expandidas.add(cat.id);
+      }
+    });
+    return expandidas;
   });
 
   // -------- Selector "Cambiar mes" (año → mes), estilo Kontrol Cash --------
@@ -295,18 +302,14 @@ export default class TodasLasTareasComponent {
   }
 
   toggleCategoriaExpandida(categoriaId: string): void {
-    const actual = this.categoriasExpandidas();
+    const actual = this.categoriasColapsadas();
     const nuevo = new Set(actual);
     if (nuevo.has(categoriaId)) {
       nuevo.delete(categoriaId);
     } else {
       nuevo.add(categoriaId);
     }
-    this.categoriasExpandidas.set(nuevo);
-  }
-
-  estaCategoriaExpandida(categoriaId: string): boolean {
-    return this.categoriasExpandidas().has(categoriaId);
+    this.categoriasColapsadas.set(nuevo);
   }
 
   empezarEdicion(task: Task, origen: Origen): void {
