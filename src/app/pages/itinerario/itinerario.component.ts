@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 import { ScheduleService } from '../../services/schedule.service';
 import { TaskService } from '../../services/task.service';
+import { UiStateService } from '../../core/ui-state.service';
 import { Activity, ScheduleBlock } from '../../models/schedule.model';
 import { Task } from '../../models/task.model';
 import { ScheduleGridComponent } from './components/schedule-grid/schedule-grid.component';
@@ -19,6 +20,7 @@ import { ActivityPanelComponent } from './components/activity-panel/activity-pan
 export class ItinerarioComponent {
   private scheduleService = inject(ScheduleService);
   private taskService = inject(TaskService);
+  uiState = inject(UiStateService);
 
   // Señales reactivas
   activities = toSignal(this.scheduleService.watchActivities(), { initialValue: [] as Activity[] });
