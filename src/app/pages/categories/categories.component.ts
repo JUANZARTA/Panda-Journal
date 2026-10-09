@@ -2,8 +2,10 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { combineLatest } from 'rxjs';
 
 import { TaskTypeService } from '../../services/taskType.service';
+import { TaskService } from '../../services/task.service';
 import { TaskType } from '../../models/taskType.model';
 
 @Component({
@@ -15,6 +17,7 @@ import { TaskType } from '../../models/taskType.model';
 })
 export default class CategoriesComponent {
   private taskTypeService = inject(TaskTypeService);
+  private taskService = inject(TaskService);
 
   categorias = toSignal(this.taskTypeService.getAllTaskTypes(), { initialValue: [] as TaskType[] });
 
@@ -22,6 +25,8 @@ export default class CategoriesComponent {
   editandoId = '';
   editandoNombre = '';
   eliminandoId = '';
+  errorEliminar = '';
+  modalErrorEliminar = false;
 
   trackById(_index: number, item: TaskType): string {
     return item.id;
@@ -54,18 +59,61 @@ export default class CategoriesComponent {
   }
 
   pedirEliminar(id: string): void {
-    this.eliminandoId = id;
+    combineLatest([
+      this.taskService.watchAllDatedTasks(),
+      this.taskService.watchUndatedTasks()
+    ]).subscribe(([tareasDated, tareasUndated]) => {
+      const tienePendientesDated = tareasDated.some((t) => t.categoriaId === id && t.estado !== 'realizado');
+      const tienePendientesUndated = tareasUndated.some((t) => t.categoriaId === id && t.estado !== 'realizado');
+      const tienePendientes = tienePendientesDated || tienePendientesUndated;
+
+      this.eliminandoId = id;
+      this.modalErrorEliminar = tienePendientes;
+    });
   }
 
   cancelarEliminar(): void {
     this.eliminandoId = '';
+    this.errorEliminar = '';
   }
 
   confirmarEliminar(): void {
+    console.log('confirmarEliminar llamado, id:', this.eliminandoId);
     if (!this.eliminandoId) return;
-    this.taskTypeService.deleteTaskType(this.eliminandoId).subscribe({
-      next: () => this.cancelarEliminar(),
-      error: (err) => console.error('[ERROR] Al eliminar categoría:', err),
+    const idAEliminar = this.eliminandoId;
+    this.taskTypeService.deleteTaskType(idAEliminar).subscribe({
+      next: () => {
+        console.log('Categoría eliminada exitosamente');
+        this.eliminandoId = '';
+        this.errorEliminar = '';
+      },
+      error: (err) => {
+        console.error('[ERROR] Al eliminar categoría:', err);
+        this.errorEliminar = 'Error al eliminar la categoría';
+        setTimeout(() => (this.errorEliminar = ''), 3000);
+      },
+    });
+  }
+
+  toggleActiva(categoria: TaskType): void {
+    combineLatest([
+      this.taskService.watchAllDatedTasks(),
+      this.taskService.watchUndatedTasks()
+    ]).subscribe(([tareasDated, tareasUndated]) => {
+      const tienePendientesDated = tareasDated.some((t) => t.categoriaId === categoria.id && t.estado !== 'realizado');
+      const tienePendientesUndated = tareasUndated.some((t) => t.categoriaId === categoria.id && t.estado !== 'realizado');
+      const tienePendientes = tienePendientesDated || tienePendientesUndated;
+
+      if (tienePendientes && (categoria.activa ?? true)) {
+        this.errorEliminar = 'No puedes desactivar una categoría con tareas pendientes';
+        setTimeout(() => (this.errorEliminar = ''), 3000);
+        return;
+      }
+
+      const novaActiva = !(categoria.activa ?? true);
+      this.taskTypeService.editTaskType(categoria.id, categoria.nombre, novaActiva).subscribe({
+        error: (err) => console.error('[ERROR] Al cambiar estado de categoría:', err),
+      });
     });
   }
 }

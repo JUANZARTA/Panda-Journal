@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild, computed, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -54,6 +54,15 @@ export class SidebarComponent implements OnInit {
     // Notificaciones desactivadas: estaban generando avisos incorrectos (ej. en
     // cuentas recién creadas, sin tareas todavía). Queda el código de abajo por
     // si se retoma más adelante, pero no se llama a nada acá.
+  }
+
+  toggleSidebarCollapse(): void {
+    this.uiState.isSidebarCollapsed.update((v) => !v);
+    try {
+      localStorage.setItem('sidebar-collapsed', String(this.uiState.isSidebarCollapsed()));
+    } catch {
+      // localStorage no disponible
+    }
   }
 
   navigate(path: string): void {

@@ -1,169 +1,345 @@
-<div class="relative">
-  <!-- Gráfica donut fija al lado derecho -->
-  <div *ngIf="hayTareasHoy()" class="fixed right-4 top-6 z-40">
-    <div class="bg-paper-raised rounded-lg shadow-page p-4 w-32 h-32 flex items-center justify-center">
-      <svg class="w-24 h-24" viewBox="0 0 100 100" style="overflow: visible;">
-        <!-- Círculo gris de fondo (pendiente) -->
-        <circle cx="50" cy="50" r="35" fill="none" stroke="#d0ccc7" stroke-width="11" />
-
-        <!-- Círculo verde (completado) con dasharray -->
+<!-- Encabezado de la página - Full width -->
+<div class="w-full px-4 md:px-0 py-4 md:py-8 flex justify-center border-b border-paper-line transition-all duration-300"
+  [style.margin-left.px]="uiState.isSidebarCollapsed() ? -80 : 0">
+  <div class="flex flex-col items-center gap-3 relative w-full">
+    <!-- Progreso circular (esquina superior derecha en desktop) -->
+    <div class="absolute top-0 right-0 hidden md:flex">
+      <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <!-- Círculo de fondo -->
+        <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(0, 0, 0, 0.1)" stroke-width="6"/>
+        <!-- Círculo de progreso -->
         <circle
-          cx="50"
-          cy="50"
-          r="35"
+          cx="40"
+          cy="40"
+          r="32"
           fill="none"
-          stroke="#6BCB77"
-          stroke-width="11"
-          stroke-dasharray="219.9"
-          [style.stroke-dashoffset.px]="219.9 * (1 - progresoDia() / 100)"
+          stroke="#4a9d6f"
+          stroke-width="6"
+          stroke-dasharray="200.89 200.89"
+          [attr.stroke-dashoffset]="200.89 - (progresoDia() / 100) * 200.89"
           stroke-linecap="round"
-          transform="rotate(-90 50 50)"
+          style="transform: rotate(-90deg); transform-origin: 40px 40px; transition: stroke-dashoffset 300ms ease"
         />
-
-        <!-- Círculo blanco en el centro -->
-        <circle cx="50" cy="50" r="20" fill="white" />
-
-        <!-- Porcentaje en el centro -->
-        <text
-          x="50"
-          y="57"
-          text-anchor="middle"
-          fill="#1a1a1a"
-          font-size="20"
-          font-weight="bold"
-          font-family="system-ui"
-        >
+        <!-- Texto del porcentaje -->
+        <text x="40" y="48" text-anchor="middle" class="text-center font-semibold" style="font-size: 16px; font-weight: bold; fill: currentColor;">
           {{ progresoDia() }}%
         </text>
       </svg>
     </div>
-  </div>
 
-<div class="max-w-2xl mx-auto px-4 md:px-0 py-6 md:py-12">
-  <!-- Encabezado de la página -->
-  <div class="mb-6">
-    <p class="font-hand text-4xl md:text-5xl text-ink capitalize">{{ fechaLegible() }}</p>
+    <!-- Título centrado con flechas de navegación -->
+    <div class="flex items-center justify-center gap-2 md:gap-4">
+      <button
+        (click)="irDiaAnterior()"
+        class="p-1.5 rounded-full hover:bg-accent-soft/60 transition"
+        aria-label="Día anterior"
+        [title]="'Día anterior'"
+      >
+        <span class="material-icons text-ink">chevron_left</span>
+      </button>
+      <p class="font-hand text-3xl md:text-4xl text-ink capitalize text-center">{{ fechaLegible() }}</p>
+      <button
+        (click)="irDiaSiguiente()"
+        class="p-1.5 rounded-full hover:bg-accent-soft/60 transition"
+        aria-label="Día siguiente"
+        [title]="'Día siguiente'"
+      >
+        <span class="material-icons text-ink">chevron_right</span>
+      </button>
+    </div>
     <button
       *ngIf="!esHoy()"
       (click)="irHoy()"
-      class="inline-flex items-center gap-2 bg-accent text-white text-sm font-semibold px-4 py-2 rounded-full shadow-page hover:opacity-90 transition"
+      class="inline-flex items-center gap-2 bg-accent text-white text-xs md:text-sm font-semibold px-3 md:px-4 py-1.5 md:py-2 rounded-full shadow-page hover:opacity-90 transition"
+      [title]="'Volver a hoy'"
     >
-      <span class="material-icons" style="font-size: 18px">today</span>
-      Volver a hoy
+      <span class="material-icons" style="font-size: 16px">today</span>
+      <span class="hidden md:inline">Volver a hoy</span>
     </button>
   </div>
+</div>
 
-  <!-- La hoja del día -->
-  <div
-    class="notebook-page rounded-lg shadow-page px-5 md:px-10 py-8"
-    [ngClass]="pageAnimClass()"
-    (animationend)="pageAnimClass.set('')"
-  >
-    <ng-container *ngIf="categorias().length > 0; else sinCategorias">
-      <section *ngFor="let categoria of categorias(); trackBy: trackById" class="mb-8 last:mb-0">
-        <h2 class="font-hand text-2xl text-accent mb-3">{{ categoria.nombre }}</h2>
+<!-- Modal para mover tarea -->
+<div *ngIf="tareaAMover()" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+  <div class="bg-paper rounded-lg shadow-lg max-w-sm w-full p-6 border border-paper-line">
+    <h3 class="font-hand text-2xl text-ink mb-4">Mover tarea a otro día</h3>
+    <p class="text-ink-soft mb-4 text-sm">{{ tareaAMover()?.nombre }}</p>
 
-        <div
-          *ngFor="let task of tareasDe(categoria.id); trackBy: trackByTaskId"
-          class="flex items-start gap-3 py-1.5 group"
+    <div class="space-y-2 mb-6">
+      <div class="flex items-center gap-2">
+        <button
+          (click)="irDiaAnteriorModal()"
+          class="p-1 rounded hover:bg-accent-soft/60 transition"
         >
-          <button
-            (click)="toggleTask(task)"
-            class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
-            [ngClass]="task.estado === 'realizado' ? 'bg-done border-done' : 'border-ink-faint'"
-          >
-            <span *ngIf="task.estado === 'realizado'" class="material-icons text-white" style="font-size: 14px">
-              check
-            </span>
-          </button>
-
-          <ng-container *ngIf="editandoTaskId !== task.id; else editandoTask">
-            <span
-              (click)="empezarEdicionTask(task)"
-              class="flex-1 cursor-text break-words"
-              [class.line-through]="task.estado === 'realizado'"
-              [class.text-ink-faint]="task.estado === 'realizado'"
-              [class.text-ink]="task.estado !== 'realizado'"
-            >
-              {{ task.nombre }}
-            </span>
-            <button
-              (click)="eliminarTarea(task)"
-              class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
-            >
-              <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
-            </button>
-          </ng-container>
-
-          <ng-template #editandoTask>
-            <input
-              type="text"
-              [(ngModel)]="editandoTaskNombre"
-              (keyup.enter)="guardarEdicionTask(task)"
-              (keyup.escape)="cancelarEdicionTask()"
-              (blur)="guardarEdicionTask(task)"
-              class="flex-1 bg-transparent border-b border-accent focus:outline-none text-ink"
-            />
-          </ng-template>
-        </div>
-
-        <!-- Alta rápida -->
-        <div class="flex items-center gap-3 py-1.5 mt-1">
-          <span class="w-5 h-5 flex items-center justify-center shrink-0">
-            <span class="material-icons text-ink-faint" style="font-size: 16px">add</span>
-          </span>
-          <input
-            type="text"
-            [(ngModel)]="nuevoTaskTexto[categoria.id]"
-            (keyup.enter)="agregarTarea(categoria.id)"
-            placeholder="Agregar tarea…"
-            class="flex-1 bg-transparent placeholder:text-ink-faint text-ink focus:outline-none"
-          />
-          <button
-            *ngIf="nuevoTaskTexto[categoria.id]"
-            (click)="agregarTarea(categoria.id)"
-            class="text-xs font-semibold text-accent px-2 py-1 shrink-0"
-          >
-            Agregar
-          </button>
-        </div>
-      </section>
-    </ng-container>
-
-    <ng-template #sinCategorias>
-      <div class="text-center py-10">
-        <p class="text-ink-soft mb-3">Todavía no tenés categorías en tu cuaderno.</p>
-        <a routerLink="/app/categorias" class="text-accent font-semibold underline">Creá la primera</a>
+          <span class="material-icons text-ink">chevron_left</span>
+        </button>
+        <input
+          type="date"
+          [(ngModel)]="fechaMoverString"
+          class="flex-1 px-3 py-2 border border-paper-line rounded bg-paper text-ink focus:outline-none focus:border-accent"
+        />
+        <button
+          (click)="irDiaSiguienteModal()"
+          class="p-1 rounded hover:bg-accent-soft/60 transition"
+        >
+          <span class="material-icons text-ink">chevron_right</span>
+        </button>
       </div>
-    </ng-template>
-  </div>
+      <p class="text-xs text-ink-faint">{{ fechaMoverLegible() }}</p>
+    </div>
 
-  <!-- Progreso del día -->
-  <div *ngIf="hayTareasHoy()" class="mt-4 px-1">
-    <div class="h-1.5 rounded-full bg-paper-line overflow-hidden">
-      <div
-        class="h-full bg-done rounded-full transition-all duration-500"
-        [style.width.%]="progresoDia()"
-      ></div>
+    <div class="flex gap-3">
+      <button
+        (click)="cancelarMover()"
+        class="flex-1 px-4 py-2 border border-paper-line rounded text-ink hover:bg-accent-soft/40 transition"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="confirmarMover()"
+        class="flex-1 px-4 py-2 bg-accent text-white rounded font-semibold hover:opacity-90 transition"
+      >
+        Mover
+      </button>
     </div>
   </div>
+</div>
 
-  <!-- Navegación de días, al pie de la página -->
-  <div class="flex items-center justify-center gap-6 mt-8">
-    <button
-      (click)="irDiaAnterior()"
-      class="p-2 rounded-full hover:bg-accent-soft/60 transition"
-      aria-label="Día anterior"
+<!-- Cuaderno - Contenedor principal -->
+<div class="flex-1 w-full py-6 md:py-12 transition-all duration-300"
+  [style.margin-left.px]="uiState.isSidebarCollapsed() ? -80 : 0">
+  <div class="notebook-container">
+    <!-- La hoja del día - Layout de cuaderno abierto -->
+    <div
+      class="notebook-spread"
+      [ngClass]="pageAnimClass()"
+      (animationend)="pageAnimClass.set('')"
     >
-      <span class="material-icons text-ink">chevron_left</span>
-    </button>
-    <span class="text-sm text-ink-faint">{{ selectedDate() }}</span>
-    <button
-      (click)="irDiaSiguiente()"
-      class="p-2 rounded-full hover:bg-accent-soft/60 transition"
-      aria-label="Día siguiente"
-    >
-      <span class="material-icons text-ink">chevron_right</span>
-    </button>
+      <!-- Página izquierda -->
+      <div class="notebook-page px-3 md:px-8 py-4 md:py-10">
+      <ng-container *ngIf="categorias().length > 0; else sinCategorias">
+        <section
+          *ngFor="let categoriaId of categoriasPartidas().izquierda"
+          class="mb-8 last:mb-0"
+        >
+          <h2 class="font-hand text-2xl text-accent mb-3">{{ nombreCategoria(categoriaId) }}</h2>
+
+          <div
+            *ngFor="let task of tareasDe(categoriaId); trackBy: trackByTaskId"
+            class="flex items-start gap-3 py-1.5 group"
+          >
+            <button
+              (click)="toggleTask(task)"
+              class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
+              [ngClass]="task.estado === 'realizado' ? 'bg-done border-done' : 'border-ink-faint'"
+            >
+              <span *ngIf="task.estado === 'realizado'" class="material-icons text-white" style="font-size: 14px">
+                check
+              </span>
+            </button>
+
+            <ng-container *ngIf="editandoTaskId !== task.id; else editandoTask">
+              <span
+                (click)="empezarEdicionTask(task)"
+                class="flex-1 cursor-text break-words"
+                [class.line-through]="task.estado === 'realizado'"
+                [class.text-ink-faint]="task.estado === 'realizado'"
+                [class.text-ink]="task.estado !== 'realizado'"
+              >
+                {{ task.nombre }}
+              </span>
+              <div class="flex gap-1 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition">
+                <button
+                  (click)="moverTareaArriba(task, categoriaId)"
+                  [disabled]="!puedeSubir(task, categoriaId)"
+                  class="p-1 shrink-0 disabled:opacity-30"
+                  title="Mover arriba"
+                >
+                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_upward</span>
+                </button>
+                <button
+                  (click)="moverTareaAbajo(task, categoriaId)"
+                  [disabled]="!puedeJajar(task, categoriaId)"
+                  class="p-1 shrink-0 disabled:opacity-30"
+                  title="Mover abajo"
+                >
+                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_downward</span>
+                </button>
+              </div>
+              <button
+                (click)="abrirMoverTarea(task)"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+                title="Mover a otro día"
+              >
+                <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
+              </button>
+              <button
+                (click)="eliminarTarea(task)"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+              >
+                <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
+              </button>
+            </ng-container>
+
+            <ng-template #editandoTask>
+              <input
+                type="text"
+                [(ngModel)]="editandoTaskNombre"
+                (keyup.enter)="guardarEdicionTask(task)"
+                (keyup.escape)="cancelarEdicionTask()"
+                (blur)="guardarEdicionTask(task)"
+                class="flex-1 bg-transparent border-b border-accent focus:outline-none text-ink"
+              />
+            </ng-template>
+          </div>
+
+          <!-- Alta rápida -->
+          <div class="flex items-center gap-3 py-1.5 mt-1">
+            <span class="w-5 h-5 flex items-center justify-center shrink-0">
+              <span class="material-icons text-ink-faint" style="font-size: 16px">add</span>
+            </span>
+            <input
+              type="text"
+              [(ngModel)]="nuevoTaskTexto[categoriaId]"
+              (keyup.enter)="agregarTarea(categoriaId)"
+              placeholder="Agregar tarea…"
+              class="flex-1 bg-transparent placeholder:text-ink-faint text-ink focus:outline-none"
+            />
+            <button
+              *ngIf="nuevoTaskTexto[categoriaId]"
+              (click)="agregarTarea(categoriaId)"
+              class="text-xs font-semibold text-accent px-2 py-1 shrink-0"
+            >
+              Agregar
+            </button>
+          </div>
+        </section>
+      </ng-container>
+
+      <ng-template #sinCategorias>
+        <div class="text-center py-10">
+          <p class="text-ink-soft mb-3">Todavía no tenés categorías en tu cuaderno.</p>
+          <a routerLink="/app/categorias" class="text-accent font-semibold underline">Creá la primera</a>
+        </div>
+      </ng-template>
+    </div>
+
+      <!-- Lomo con hilos de encuadernación -->
+      <div class="notebook-spine">
+        <svg class="notebook-threads" viewBox="0 0 20 280" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="5" y1="20" x2="15" y2="20" stroke="#8b7355" stroke-width="1" opacity="0.6"/>
+          <line x1="5" y1="50" x2="15" y2="50" stroke="#8b7355" stroke-width="1" opacity="0.6"/>
+          <line x1="5" y1="80" x2="15" y2="80" stroke="#8b7355" stroke-width="1" opacity="0.6"/>
+          <line x1="5" y1="110" x2="15" y2="110" stroke="#8b7355" stroke-width="1" opacity="0.6"/>
+          <line x1="5" y1="140" x2="15" y2="140" stroke="#8b7355" stroke-width="1" opacity="0.6"/>
+          <line x1="5" y1="170" x2="15" y2="170" stroke="#8b7355" stroke-width="1" opacity="0.6"/>
+          <line x1="5" y1="200" x2="15" y2="200" stroke="#8b7355" stroke-width="1" opacity="0.6"/>
+          <line x1="5" y1="230" x2="15" y2="230" stroke="#8b7355" stroke-width="1" opacity="0.6"/>
+          <line x1="5" y1="260" x2="15" y2="260" stroke="#8b7355" stroke-width="1" opacity="0.6"/>
+        </svg>
+      </div>
+
+      <!-- Página derecha -->
+      <div class="notebook-page px-3 md:px-8 py-4 md:py-10">
+      <ng-container *ngIf="categoriasPartidas().derecha.length > 0">
+        <section
+          *ngFor="let categoriaId of categoriasPartidas().derecha"
+          class="mb-8 last:mb-0"
+        >
+          <h2 class="font-hand text-2xl text-accent mb-3">{{ nombreCategoria(categoriaId) }}</h2>
+
+          <div
+            *ngFor="let task of tareasDe(categoriaId); trackBy: trackByTaskId"
+            class="flex items-start gap-3 py-1.5 group"
+          >
+            <button
+              (click)="toggleTask(task)"
+              class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
+              [ngClass]="task.estado === 'realizado' ? 'bg-done border-done' : 'border-ink-faint'"
+            >
+              <span *ngIf="task.estado === 'realizado'" class="material-icons text-white" style="font-size: 14px">
+                check
+              </span>
+            </button>
+
+            <ng-container *ngIf="editandoTaskId !== task.id; else editandoTask2">
+              <span
+                (click)="empezarEdicionTask(task)"
+                class="flex-1 cursor-text break-words"
+                [class.line-through]="task.estado === 'realizado'"
+                [class.text-ink-faint]="task.estado === 'realizado'"
+                [class.text-ink]="task.estado !== 'realizado'"
+              >
+                {{ task.nombre }}
+              </span>
+              <div class="flex gap-1 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition">
+                <button
+                  (click)="moverTareaArriba(task, categoriaId)"
+                  [disabled]="!puedeSubir(task, categoriaId)"
+                  class="p-1 shrink-0 disabled:opacity-30"
+                  title="Mover arriba"
+                >
+                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_upward</span>
+                </button>
+                <button
+                  (click)="moverTareaAbajo(task, categoriaId)"
+                  [disabled]="!puedeJajar(task, categoriaId)"
+                  class="p-1 shrink-0 disabled:opacity-30"
+                  title="Mover abajo"
+                >
+                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_downward</span>
+                </button>
+              </div>
+              <button
+                (click)="abrirMoverTarea(task)"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+                title="Mover a otro día"
+              >
+                <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
+              </button>
+              <button
+                (click)="eliminarTarea(task)"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+              >
+                <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
+              </button>
+            </ng-container>
+
+            <ng-template #editandoTask2>
+              <input
+                type="text"
+                [(ngModel)]="editandoTaskNombre"
+                (keyup.enter)="guardarEdicionTask(task)"
+                (keyup.escape)="cancelarEdicionTask()"
+                (blur)="guardarEdicionTask(task)"
+                class="flex-1 bg-transparent border-b border-accent focus:outline-none text-ink"
+              />
+            </ng-template>
+          </div>
+
+          <!-- Alta rápida -->
+          <div class="flex items-center gap-3 py-1.5 mt-1">
+            <span class="w-5 h-5 flex items-center justify-center shrink-0">
+              <span class="material-icons text-ink-faint" style="font-size: 16px">add</span>
+            </span>
+            <input
+              type="text"
+              [(ngModel)]="nuevoTaskTexto[categoriaId]"
+              (keyup.enter)="agregarTarea(categoriaId)"
+              placeholder="Agregar tarea…"
+              class="flex-1 bg-transparent placeholder:text-ink-faint text-ink focus:outline-none"
+            />
+            <button
+              *ngIf="nuevoTaskTexto[categoriaId]"
+              (click)="agregarTarea(categoriaId)"
+              class="text-xs font-semibold text-accent px-2 py-1 shrink-0"
+            >
+              Agregar
+            </button>
+          </div>
+        </section>
+      </ng-container>
+      </div>
+    </div>
   </div>
 </div>

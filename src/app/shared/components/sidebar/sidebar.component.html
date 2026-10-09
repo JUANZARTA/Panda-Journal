@@ -6,17 +6,30 @@
 ></div>
 
 <aside
-  class="fixed inset-y-0 left-0 z-50 w-72 flex flex-col border-r border-paper-line bg-paper-raised
-         transform transition-transform duration-300 md:fixed md:translate-x-0 md:h-screen"
-  [ngClass]="uiState.isDrawerOpen() ? 'translate-x-0' : '-translate-x-full'"
+  class="fixed inset-y-0 left-0 z-50 flex flex-col border-r border-paper-line bg-paper-raised
+         transform transition-all duration-300 md:fixed md:translate-x-0 md:h-screen w-72"
+  [ngClass]="[
+    uiState.isDrawerOpen() ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+    uiState.isSidebarCollapsed() ? 'md:w-20' : 'md:w-72'
+  ]"
 >
   <!-- Marca -->
-  <div class="flex items-center gap-3 px-5 py-6">
-    <img src="assets/img/logo.png" alt="Panda Journal" class="h-10 w-10 rounded-lg object-cover" />
-    <div>
-      <p class="font-hand text-2xl leading-none text-ink">Panda Journal</p>
-      <p class="text-xs text-ink-faint">Tu cuaderno de tareas</p>
+  <div class="relative flex items-center justify-center px-5 py-6">
+    <div *ngIf="!uiState.isSidebarCollapsed()" class="flex items-center gap-3 min-w-0 flex-1">
+      <img src="assets/img/logo.png" alt="Panda Journal" class="h-10 w-10 rounded-lg object-cover flex-shrink-0" />
+      <div class="overflow-hidden">
+        <p class="font-hand text-2xl leading-none text-ink truncate">Panda Journal</p>
+        <p class="text-xs text-ink-faint truncate">Tu cuaderno de tareas</p>
+      </div>
     </div>
+    <img *ngIf="uiState.isSidebarCollapsed()" src="assets/img/logo.png" alt="Panda Journal" class="h-10 w-10 rounded-lg object-cover" />
+    <button
+      (click)="toggleSidebarCollapse()"
+      class="absolute right-2 p-1 rounded-lg hover:bg-accent-soft/60 transition flex-shrink-0 hidden md:block"
+      [attr.aria-label]="uiState.isSidebarCollapsed() ? 'Expandir' : 'Contraer'"
+    >
+      <span class="material-icons text-sm text-ink">{{ uiState.isSidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}</span>
+    </button>
   </div>
 
   <!-- Navegación -->
@@ -26,47 +39,54 @@
       routerLinkActive="bg-accent-soft text-ink"
       (click)="navigate('/app/home')"
       class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+      [title]="uiState.isSidebarCollapsed() ? 'Cuaderno de Tareas' : ''"
     >
-      <span class="material-icons text-lg">today</span>
-      Cuaderno de Tareas
+      <span class="material-icons text-lg flex-shrink-0">today</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">Cuaderno de Tareas</span>
     </a>
     <a
       routerLink="/app/categorias"
       routerLinkActive="bg-accent-soft text-ink"
       (click)="navigate('/app/categorias')"
       class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+      [title]="uiState.isSidebarCollapsed() ? 'Categorías' : ''"
     >
-      <span class="material-icons text-lg">folder</span>
-      Categorías
+      <span class="material-icons text-lg flex-shrink-0">folder</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">Categorías</span>
     </a>
     <a
       routerLink="/app/otras-tareas"
       routerLinkActive="bg-accent-soft text-ink"
       (click)="navigate('/app/otras-tareas')"
       class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+      [title]="uiState.isSidebarCollapsed() ? 'Otras tareas' : ''"
     >
-      <span class="material-icons text-lg">inbox</span>
-      Otras tareas
+      <span class="material-icons text-lg flex-shrink-0">inbox</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">Otras tareas</span>
     </a>
     <a
       routerLink="/app/todas-las-tareas"
       routerLinkActive="bg-accent-soft text-ink"
       (click)="navigate('/app/todas-las-tareas')"
       class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+      [title]="uiState.isSidebarCollapsed() ? 'Todas las tareas' : ''"
     >
-      <span class="material-icons text-lg">checklist</span>
-      Todas las tareas
+      <span class="material-icons text-lg flex-shrink-0">checklist</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">Todas las tareas</span>
     </a>
     <a
       routerLink="/app/tareas-perdidas"
       routerLinkActive="bg-accent-soft text-ink"
       (click)="navigate('/app/tareas-perdidas')"
       class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+      [title]="uiState.isSidebarCollapsed() ? 'Tareas perdidas' : ''"
     >
-      <span class="material-icons text-lg">history_toggle_off</span>
-      Tareas perdidas
-      <span *ngIf="lostCount() > 0" class="ml-auto bg-overdue text-white text-xs rounded-full px-2 py-0.5">
-        {{ lostCount() }}
+      <span class="material-icons text-lg flex-shrink-0">history_toggle_off</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()" class="flex items-center gap-2">
+        Tareas perdidas
+        <span *ngIf="lostCount() > 0" class="ml-auto bg-overdue text-white text-xs rounded-full px-2 py-0.5">
+          {{ lostCount() }}
+        </span>
       </span>
     </a>
     <a
@@ -74,31 +94,33 @@
       routerLinkActive="bg-accent-soft text-ink"
       (click)="navigate('/app/itinerario')"
       class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+      [title]="uiState.isSidebarCollapsed() ? 'Itinerario' : ''"
     >
-      <span class="material-icons text-lg">schedule</span>
-      Itinerario
+      <span class="material-icons text-lg flex-shrink-0">schedule</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">Itinerario</span>
     </a>
     <a
       routerLink="/app/tareas-recurrentes"
       routerLinkActive="bg-accent-soft text-ink"
       (click)="navigate('/app/tareas-recurrentes')"
       class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+      [title]="uiState.isSidebarCollapsed() ? 'Tareas recurrentes' : ''"
     >
-      <span class="material-icons text-lg">settings</span>
-      Tareas recurrentes
+      <span class="material-icons text-lg flex-shrink-0">settings</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">Tareas recurrentes</span>
     </a>
   </nav>
 
   <div class="flex-1"></div>
 
   <!-- Actividad actual (desde Itinerario) -->
-  <div *ngIf="currentActivity().activity && currentActivity().block" class="px-3 mb-3">
+  <div *ngIf="currentActivity().activity && currentActivity().block && !uiState.isSidebarCollapsed()" class="px-3 mb-3">
     <div
       class="p-2 rounded-lg text-xs font-medium text-white flex items-center gap-2 border-l-4"
       [style.background-color]="currentActivity().activity!.color + '80'"
       [style.border-left-color]="currentActivity().activity!.color"
     >
-      <span class="material-icons text-sm">schedule</span>
+      <span class="material-icons text-sm flex-shrink-0">schedule</span>
       <div class="flex-1 min-w-0">
         <p class="font-semibold truncate text-xs">{{ currentActivity().activity!.nombre }}</p>
         <p class="text-xs opacity-90 leading-tight">
@@ -114,9 +136,10 @@
     <button
       (click)="pwaInstall.install()"
       class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-accent border border-accent hover:bg-accent-soft/40 transition"
+      [title]="uiState.isSidebarCollapsed() ? 'Instalar app' : ''"
     >
-      <span class="material-icons text-lg">install_mobile</span>
-      Instalar app
+      <span class="material-icons text-lg flex-shrink-0">install_mobile</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">Instalar app</span>
     </button>
   </div>
 
@@ -125,9 +148,10 @@
     <button
       (click)="uiState.toggleDarkMode()"
       class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition"
+      [title]="uiState.isSidebarCollapsed() ? (uiState.isDarkMode() ? 'Modo claro' : 'Modo oscuro') : ''"
     >
-      <span class="material-icons text-lg">{{ uiState.isDarkMode() ? 'light_mode' : 'dark_mode' }}</span>
-      {{ uiState.isDarkMode() ? 'Modo claro' : 'Modo oscuro' }}
+      <span class="material-icons text-lg flex-shrink-0">{{ uiState.isDarkMode() ? 'light_mode' : 'dark_mode' }}</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">{{ uiState.isDarkMode() ? 'Modo claro' : 'Modo oscuro' }}</span>
     </button>
   </div>
 
@@ -136,11 +160,12 @@
     <button
       (click)="logout()"
       class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-overdue hover:bg-overdue/10 transition"
+      [title]="uiState.isSidebarCollapsed() ? 'Salir' : ''"
     >
-      <span class="material-icons text-lg">logout</span>
-      Salir
+      <span class="material-icons text-lg flex-shrink-0">logout</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">Salir</span>
     </button>
   </div>
 
-  <p class="px-5 pb-4 text-xs text-ink-faint">© 2025 Golden Panda - v{{ version }}</p>
+  <p class="px-5 pb-4 text-xs text-ink-faint text-center" [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">© 2025 Golden Panda - v{{ version }}</p>
 </aside>

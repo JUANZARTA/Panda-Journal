@@ -9,6 +9,7 @@ import { watchValue } from '../watch-value';
 
 interface RawCategory {
   nombre: string;
+  activa?: boolean;
 }
 
 @Injectable()
@@ -42,6 +43,17 @@ export class FirebaseCategoryRepository extends CategoryRepository {
     return from(dbUpdate(ref(this.db, `${path}/${id}`), { nombre: nombre.trim() }));
   }
 
+  update(id: string, changes: Partial<any>): Observable<void> {
+    const path = this.periodPath.categoriesPath();
+    if (!path) throw new Error('No hay usuario activo');
+
+    const updatePayload: any = {};
+    if (changes['nombre'] !== undefined) updatePayload['nombre'] = changes['nombre'].trim();
+    if (changes['activa'] !== undefined) updatePayload['activa'] = changes['activa'];
+
+    return from(dbUpdate(ref(this.db, `${path}/${id}`), updatePayload));
+  }
+
   remove(id: string): Observable<void> {
     const path = this.periodPath.categoriesPath();
     if (!path) throw new Error('No hay usuario activo');
@@ -52,5 +64,5 @@ export class FirebaseCategoryRepository extends CategoryRepository {
 
 function flattenCategories(categorias: Record<string, RawCategory> | null): TaskType[] {
   if (!categorias) return [];
-  return Object.entries(categorias).map(([id, categoria]) => ({ id, nombre: categoria.nombre }));
+  return Object.entries(categorias).map(([id, categoria]) => ({ id, nombre: categoria.nombre, activa: categoria.activa ?? true }));
 }

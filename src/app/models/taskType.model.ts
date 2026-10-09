@@ -5,4 +5,5 @@ export interface TaskType {
   /** Push-key de Firebase. Antes se derivaba del nombre — causaba colisiones. */
   id: string;
   nombre: string;
+  activa?: boolean | "eliminada";
 }

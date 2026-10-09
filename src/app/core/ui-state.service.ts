@@ -8,6 +8,7 @@ export class UiStateService {
 
   isDrawerOpen = signal(false);
   isDarkMode = signal(this.isBrowser ? localStorage.getItem('darkMode') === 'true' : false);
+  isSidebarCollapsed = signal(this.isBrowser ? localStorage.getItem('sidebar-collapsed') === 'true' : false);
 
   constructor() {
     effect(() => {

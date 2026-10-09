@@ -4,11 +4,13 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { CategoryRepository } from '../data-access/repositories/category.repository';
+import { TaskService } from './task.service';
 import { TaskType } from '../models/taskType.model';
 
 @Injectable({ providedIn: 'root' })
 export class TaskTypeService {
   private repo = inject(CategoryRepository);
+  private taskService = inject(TaskService);
 
   /** Stream en vivo — se actualiza solo cuando cambian las categorías, sin volver a pedir. */
   getAllTaskTypes(): Observable<TaskType[]> {
@@ -19,8 +21,8 @@ export class TaskTypeService {
     return this.repo.create(nombre);
   }
 
-  editTaskType(id: string, nuevoNombre: string): Observable<void> {
-    return this.repo.rename(id, nuevoNombre);
+  editTaskType(id: string, nuevoNombre: string, activa?: boolean): Observable<void> {
+    return activa !== undefined ? this.repo.update(id, { nombre: nuevoNombre, activa }) : this.repo.rename(id, nuevoNombre);
   }
 
   deleteTaskType(id: string): Observable<void> {
