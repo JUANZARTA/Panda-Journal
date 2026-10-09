@@ -6,4 +6,5 @@ export interface TaskType {
   id: string;
   nombre: string;
   activa?: boolean | "eliminada";
+  orden?: number;
 }

@@ -57,8 +57,17 @@ export default class HomeComponent {
     const cats = this.categorias();
     const tareasMap = this.tareasPorCategoria();
     const totalTareas = this.tareas().length;
-    const mitad = Math.ceil(totalTareas / 2);
 
+    if (totalTareas === 0) {
+      // Sin tareas: dividir categorías en dos mitades
+      const mitadCats = Math.ceil(cats.length / 2);
+      const izquierda = cats.slice(0, mitadCats).map((cat) => cat.id);
+      const derecha = cats.slice(mitadCats).map((cat) => cat.id);
+      return { izquierda, derecha };
+    }
+
+    // Con tareas: acumular por cantidad de tareas
+    const mitad = Math.ceil(totalTareas / 2);
     let acumulado = 0;
     const izquierda: string[] = [];
 

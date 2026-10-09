@@ -28,4 +28,8 @@ export class TaskTypeService {
   deleteTaskType(id: string): Observable<void> {
     return this.repo.remove(id);
   }
+
+  updateOrder(id: string, orden: number): Observable<void> {
+    return this.repo.update(id, { orden });
+  }
 }

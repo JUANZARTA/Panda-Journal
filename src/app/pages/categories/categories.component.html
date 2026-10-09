@@ -45,7 +45,7 @@
   <p class="text-sm text-ink-soft mb-8">Las secciones que van a aparecer en cada página de tu cuaderno.</p>
 
   <div class="notebook-page rounded-lg shadow-page px-5 py-4">
-    <ng-container *ngFor="let categoria of categorias(); trackBy: trackById">
+    <ng-container *ngFor="let categoria of categorias(); let i = index; trackBy: trackById">
       <div
         *ngIf="categoria.activa !== 'eliminada'"
         class="flex items-center gap-3 py-2.5 border-b border-paper-line last:border-0"

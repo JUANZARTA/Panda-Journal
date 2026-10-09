@@ -116,4 +116,40 @@ export default class CategoriesComponent {
       });
     });
   }
+
+  puedeSubir(index: number): boolean {
+    return index > 0;
+  }
+
+  puedeBajar(index: number): boolean {
+    return index < this.categorias().length - 1;
+  }
+
+  moverArriba(index: number): void {
+    const cats = this.categorias();
+    if (index <= 0) return;
+
+    const actual = cats[index];
+    const anterior = cats[index - 1];
+
+    const ordenActual = actual.orden ?? index;
+    const ordenAnterior = anterior.orden ?? index - 1;
+
+    this.taskTypeService.updateOrder(actual.id, ordenAnterior).subscribe();
+    this.taskTypeService.updateOrder(anterior.id, ordenActual).subscribe();
+  }
+
+  moverAbajo(index: number): void {
+    const cats = this.categorias();
+    if (index >= cats.length - 1) return;
+
+    const actual = cats[index];
+    const siguiente = cats[index + 1];
+
+    const ordenActual = actual.orden ?? index;
+    const ordenSiguiente = siguiente.orden ?? index + 1;
+
+    this.taskTypeService.updateOrder(actual.id, ordenSiguiente).subscribe();
+    this.taskTypeService.updateOrder(siguiente.id, ordenActual).subscribe();
+  }
 }
