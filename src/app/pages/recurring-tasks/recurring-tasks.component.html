@@ -1,122 +1,83 @@
-<div class="min-h-screen bg-paper p-4 md:p-8">
-  <div class="max-w-4xl mx-auto">
-    <!-- Encabezado -->
-    <div class="mb-8">
-      <p class="font-hand text-4xl md:text-5xl text-ink">Tareas Recurrentes</p>
-      <p class="text-sm text-ink-faint mt-2">Se crean automáticamente cada día</p>
-    </div>
+<div class="max-w-2xl mx-auto px-5 py-8 md:py-12">
+  <h1 class="font-hand text-4xl text-ink mb-1">Tareas Recurrentes</h1>
+  <p class="text-sm text-ink-soft mb-8">Se crean automáticamente en tu cuaderno cada día.</p>
 
-    <!-- Formulario para nueva tarea -->
-    <div class="bg-paper-raised rounded-lg border border-paper-line p-6 mb-8">
-      <h2 class="text-lg font-semibold text-ink mb-4">Crear nueva tarea recurrente</h2>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <input
-          [(ngModel)]="nuevoNombre"
-          type="text"
-          placeholder="Nombre de la tarea"
-          class="px-4 py-2 border border-paper-line rounded bg-paper text-ink placeholder-ink-faint focus:outline-none focus:border-accent"
-        />
-
-        <select
-          [(ngModel)]="categoriaSelecionada"
-          class="px-4 py-2 border border-paper-line rounded bg-paper text-ink focus:outline-none focus:border-accent"
-        >
-          <option value="">Selecciona categoría</option>
-          <option *ngFor="let cat of categories()" [value]="cat.id">
-            {{ cat.nombre }}
-          </option>
-        </select>
-
-        <button
-          (click)="agregarTarea()"
-          [disabled]="creando()"
-          class="px-6 py-2 bg-accent-soft text-ink font-semibold rounded hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {{ creando() ? 'Creando...' : 'Agregar' }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Listado de tareas recurrentes -->
-    <div class="space-y-3">
-      <div *ngIf="tasks().length === 0" class="text-center py-8 text-ink-faint">
-        No tienes tareas recurrentes configuradas
-      </div>
-
-      <div
-        *ngFor="let task of tasks()"
-        class="bg-paper-raised rounded-lg border border-paper-line p-4 flex items-center justify-between gap-4"
-        [class.opacity-60]="!task.activo"
+  <div class="bg-paper-raised rounded-lg border border-paper-line p-5 mb-6">
+    <h2 class="font-semibold text-ink mb-4">Crear nueva tarea recurrente</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <input
+        type="text"
+        [(ngModel)]="nuevoNombre"
+        (keyup.enter)="agregarTarea()"
+        placeholder="Nombre de la tarea"
+        class="px-3 py-2 text-sm border border-paper-line rounded bg-paper text-ink placeholder:text-ink-faint focus:outline-none focus:border-accent"
+      />
+      <select
+        [(ngModel)]="categoriaSelecionada"
+        class="px-3 py-2 text-sm border border-paper-line rounded bg-paper text-ink focus:outline-none focus:border-accent"
       >
-        <!-- Contenido editable o vista normal -->
-        <div *ngIf="editando() !== task.id" class="flex-1">
-          <p class="text-ink font-semibold">{{ task.nombre }}</p>
-          <p class="text-sm text-ink-faint">{{ getNombreCategoria(task.categoriaId) }}</p>
+        <option value="">Selecciona categoría</option>
+        <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.nombre }}</option>
+      </select>
+      <button
+        (click)="agregarTarea()"
+        [disabled]="creando()"
+        class="px-4 py-2 text-sm bg-accent-soft text-ink font-semibold rounded hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {{ creando() ? 'Agregando...' : 'Agregar' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="notebook-page rounded-lg shadow-page px-5 py-4">
+    <div
+      *ngFor="let task of tasks()"
+      class="flex items-center gap-3 py-2.5 border-b border-paper-line last:border-0"
+      [class.opacity-60]="!task.activo"
+    >
+      <ng-container *ngIf="editando() !== task.id; else editandoTpl">
+        <div class="flex-1 min-w-0">
+          <p class="text-ink truncate">{{ task.nombre }}</p>
+          <p class="text-xs text-ink-faint truncate">{{ getNombreCategoria(task.categoriaId) }}</p>
         </div>
 
-        <div *ngIf="editando() === task.id" class="flex-1 grid grid-cols-2 gap-2">
-          <input
-            [(ngModel)]="editNombre"
-            type="text"
-            class="px-3 py-2 border border-paper-line rounded bg-paper text-ink text-sm focus:outline-none focus:border-accent"
-          />
-          <select
-            [(ngModel)]="editCategoria"
-            class="px-3 py-2 border border-paper-line rounded bg-paper text-ink text-sm focus:outline-none focus:border-accent"
-          >
-            <option *ngFor="let cat of categories()" [value]="cat.id">
-              {{ cat.nombre }}
-            </option>
-          </select>
-        </div>
+        <label class="flex items-center cursor-pointer" [title]="task.activo ? 'Desactivar' : 'Activar'">
+          <input type="checkbox" [checked]="task.activo" (change)="toggleActivo(task)" class="toggle-checkbox" />
+          <span class="toggle-slider"></span>
+        </label>
+        <button (click)="iniciarEdicion(task)" class="p-1.5 rounded hover:bg-accent-soft/60 transition" title="Editar">
+          <span class="material-icons text-base text-ink-soft">edit</span>
+        </button>
+        <button (click)="eliminar(task.id)" class="p-1.5 rounded hover:bg-overdue/10 transition" title="Eliminar">
+          <span class="material-icons text-base text-overdue">delete</span>
+        </button>
+      </ng-container>
 
-        <!-- Botones -->
-        <div class="flex gap-2 items-center">
-          <button
-            *ngIf="editando() === task.id"
-            (click)="guardarEdicion(task.id)"
-            class="px-3 py-2 bg-done text-paper rounded text-sm font-semibold hover:opacity-90"
-          >
-            Guardar
-          </button>
-          <button
-            *ngIf="editando() === task.id"
-            (click)="cancelarEdicion()"
-            class="px-3 py-2 bg-ink-faint text-paper rounded text-sm font-semibold hover:opacity-90"
-          >
-            Cancelar
-          </button>
+      <ng-template #editandoTpl>
+        <input
+          type="text"
+          [(ngModel)]="editNombre"
+          (keyup.enter)="guardarEdicion(task.id)"
+          (keyup.escape)="cancelarEdicion()"
+          class="flex-1 min-w-0 bg-transparent border-b border-accent text-ink focus:outline-none py-1"
+        />
+        <select
+          [(ngModel)]="editCategoria"
+          class="bg-transparent border-b border-paper-line focus:border-accent text-sm text-ink-soft focus:outline-none py-1"
+        >
+          <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.nombre }}</option>
+        </select>
+        <button (click)="guardarEdicion(task.id)" class="p-1.5 rounded hover:bg-accent-soft/60 transition" title="Guardar">
+          <span class="material-icons text-base text-done">check</span>
+        </button>
+        <button (click)="cancelarEdicion()" class="p-1.5 rounded hover:bg-accent-soft/60 transition" title="Cancelar">
+          <span class="material-icons text-base text-ink-soft">close</span>
+        </button>
+      </ng-template>
+    </div>
 
-          <button
-            *ngIf="editando() !== task.id"
-            (click)="iniciarEdicion(task)"
-            class="icon-btn text-accent hover:text-accent/70"
-            title="Editar"
-          >
-            <span class="material-icons">edit</span>
-          </button>
-
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              [checked]="task.activo"
-              (change)="toggleActivo(task)"
-              class="toggle-checkbox"
-            />
-            <span class="toggle-slider"></span>
-            <span class="text-sm text-ink-soft">{{ task.activo ? 'Activo' : 'Inactivo' }}</span>
-          </label>
-
-          <button
-            (click)="eliminar(task.id)"
-            class="icon-btn text-overdue hover:text-overdue/70"
-            title="Eliminar"
-          >
-            <span class="material-icons">delete</span>
-          </button>
-        </div>
-      </div>
+    <div *ngIf="tasks().length === 0" class="text-center text-ink-faint py-6 text-sm">
+      Todavía no tenés tareas recurrentes — creá la primera arriba.
     </div>
   </div>
 </div>

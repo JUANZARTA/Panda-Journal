@@ -9,18 +9,18 @@
 .toggle-slider {
   display: inline-block;
   position: relative;
-  width: 48px;
-  height: 24px;
+  width: 32px;
+  height: 18px;
   background-color: var(--ink-faint);
-  border-radius: 12px;
+  border-radius: 9px;
   transition: background-color 0.3s ease;
 }
 
 .toggle-slider::before {
   content: '';
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background-color: white;
   top: 2px;
@@ -33,25 +33,5 @@
 }
 
 .toggle-checkbox:checked + .toggle-slider::before {
-  left: 26px;
-}
-
-.icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 4px;
-}
-
-.icon-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.icon-btn .material-icons {
-  font-size: 20px;
+  left: 16px;
 }
