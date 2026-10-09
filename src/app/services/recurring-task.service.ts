@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, from, switchMap, map, tap } from 'rxjs';
+import { Observable, from, switchMap, map, tap, forkJoin, take } from 'rxjs';
 
 import { RecurringTaskRepository } from '../data-access/repositories/recurring-task.repository';
 import { TaskRepository } from '../data-access/repositories/task.repository';
@@ -60,10 +60,12 @@ export class RecurringTaskService {
     }
 
     return this.recurringRepo.getActive().pipe(
+      take(1),
       switchMap((recurringTasks) => {
         if (recurringTasks.length === 0) return from([undefined]);
 
         return this.taskRepo.watchByDate(today).pipe(
+          take(1),
           map((existingTasks) => {
             // Solo crea si NO existe tarea con igual nombre + categoría
             return recurringTasks.filter((recurring) => {
@@ -81,15 +83,17 @@ export class RecurringTaskService {
             // Crea todas las que no existen
             if (tasksToCreate.length === 0) return from([undefined]);
 
-            const creates = tasksToCreate.map((recurring) =>
-              this.taskRepo.create(today, {
-                nombre: recurring.nombre,
-                categoriaId: recurring.categoriaId,
-                estado: 'pendiente',
-              })
-            );
+            if (tasksToCreate.length === 0) return from([undefined]);
 
-            return from(Promise.all(creates)).pipe(
+            return forkJoin(
+              tasksToCreate.map((recurring) =>
+                this.taskRepo.create(today, {
+                  nombre: recurring.nombre,
+                  categoriaId: recurring.categoriaId,
+                  estado: 'pendiente',
+                })
+              )
+            ).pipe(
               tap(() => {
                 // Marca que se ejecutó hoy
                 try {
