@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1791576812034,
+  "timestamp": 1791577837643,
   "index": "/Panda-Journal/index.html",
   "assetGroups": [
     {
@@ -26,7 +26,7 @@
         "/Panda-Journal/common.0244e53accc39c0e.js",
         "/Panda-Journal/index.html",
         "/Panda-Journal/logo.ico",
-        "/Panda-Journal/main.759c39e33e679e6a.js",
+        "/Panda-Journal/main.6fb90797a3d24597.js",
         "/Panda-Journal/manifest.webmanifest",
         "/Panda-Journal/polyfills.9d44fdb47ffe07ab.js",
         "/Panda-Journal/runtime.70904bd5f0124921.js",
@@ -83,9 +83,9 @@
     "/Panda-Journal/icons/icon-512x512.png": "c0f50fb1710e2d0c399ca5fb89d1173901ea642c",
     "/Panda-Journal/icons/icon-72x72.png": "ef7ebb7322994046191779cee037fbc44cb04417",
     "/Panda-Journal/icons/icon-96x96.png": "c4968a0f4f22ec0b8f457327c111d0df6a5fd7af",
-    "/Panda-Journal/index.html": "3f7526af955ac5ce8cfa7e71758dc012698ae2a5",
+    "/Panda-Journal/index.html": "3b812e48c9284e36b58b01ac2a2ba56c0d6b10e9",
     "/Panda-Journal/logo.ico": "7829ef20e0b24ddb30d943260584b2ace43675e6",
-    "/Panda-Journal/main.759c39e33e679e6a.js": "131d6e361b1ea147b3e1d19d12005f24eba7d144",
+    "/Panda-Journal/main.6fb90797a3d24597.js": "a9c8ed453ac79d86fd741c276975da3312e72e57",
     "/Panda-Journal/manifest.webmanifest": "704c4fdc20c28bd07038476112780cf6a57d0dfc",
     "/Panda-Journal/polyfills.9d44fdb47ffe07ab.js": "a9a4925bca90aa532f5a312ea99496f20c5318b9",
     "/Panda-Journal/runtime.70904bd5f0124921.js": "4b6b8eab42aa56787e99cfd969a9bcde5f2537a6",
