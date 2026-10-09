@@ -1,5 +1,5 @@
 <div class="min-h-screen bg-paper p-4 md:p-8">
-  <div class="max-w-7xl mx-auto">
+  <div class="mx-auto">
     <!-- Encabezado -->
     <div class="mb-8">
       <p class="font-hand text-4xl md:text-5xl text-ink">Tu Itinerario</p>
@@ -9,8 +9,8 @@
 
 
     <!-- Layout: Grid + Panel (desktop horizontal, mobile vertical) -->
-    <div class="flex flex-col lg:flex-row gap-6 lg:gap-8">
-      <!-- Grid del itinerario (60-70%) -->
+    <div class="flex flex-col lg:flex-row gap-6 lg:gap-4">
+      <!-- Grid del itinerario (scrolleable en todos los tamaños) -->
       <div class="flex-1 min-w-0">
         <app-schedule-grid
           [activities]="activities()"
@@ -20,8 +20,8 @@
         />
       </div>
 
-      <!-- Panel de actividades (30-40%) -->
-      <div class="w-full lg:w-80">
+      <!-- Panel de actividades (sidebar) -->
+      <div class="w-full lg:w-72 lg:flex-shrink-0">
         <app-activity-panel
           [activities]="activities()"
           [blocks]="blocks()"

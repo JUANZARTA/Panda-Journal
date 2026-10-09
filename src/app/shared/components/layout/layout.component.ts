@@ -1,20 +1,23 @@
 import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { HeaderComponent } from '../header/header.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { RouterOutlet } from '@angular/router';
 import { TaskService } from '../../../services/task.service';
 import { RecurringTaskService } from '../../../services/recurring-task.service';
+import { UiStateService } from '../../../core/ui-state.service';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [HeaderComponent, SidebarComponent, RouterOutlet],
+  imports: [CommonModule, HeaderComponent, SidebarComponent, RouterOutlet],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
 })
 export class LayoutComponent {
   private taskService = inject(TaskService);
   private recurringTaskService = inject(RecurringTaskService);
+  uiState = inject(UiStateService);
 
   constructor() {
     // Una vez por sesión, al entrar a la zona protegida: migra lo que quedó
