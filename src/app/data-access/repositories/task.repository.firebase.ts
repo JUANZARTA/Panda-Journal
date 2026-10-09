@@ -12,11 +12,12 @@ import {
   update as dbUpdate,
   remove as dbRemove,
 } from '@angular/fire/database';
-import { Observable, of, from, map, switchMap } from 'rxjs';
+import { Observable, of, from, map, switchMap, forkJoin } from 'rxjs';
 
 import { TaskRepository } from './task.repository';
 import { Task, TaskConFecha, TaskInput } from '../../models/task.model';
 import { PeriodPathService } from '../period-path.service';
+import { AuthService } from '../../services/auth.service';
 import { watchValue } from '../watch-value';
 
 interface RawTask {
@@ -34,6 +35,7 @@ const VENTANA_MIGRACION_DIAS = 30;
 export class FirebaseTaskRepository extends TaskRepository {
   private db = inject(Database);
   private periodPath = inject(PeriodPathService);
+  private authService = inject(AuthService);
 
   watchByDate(fecha: string): Observable<Task[]> {
     const path = this.periodPath.tasksForDatePath(fecha);
@@ -201,6 +203,84 @@ export class FirebaseTaskRepository extends TaskRepository {
         }
 
         return huboAlgo ? from(dbUpdate(ref(this.db, uid), updates)) : of(undefined);
+      })
+    );
+  }
+
+  getSubtasks(parentTaskId: string, fecha: string): Observable<Task[]> {
+    const uid = this.authService.getUser()?.id;
+    if (!uid) return of([]);
+    const path = `${uid}/tareas/${fecha}/${parentTaskId}/subtasks`;
+    return watchValue<Record<string, RawTask> | null>(ref(this.db, path)).pipe(
+      map((tareas) => flattenTasks(tareas))
+    );
+  }
+
+  createSubtask(parentTaskId: string, fecha: string, input: TaskInput): Observable<string> {
+    const uid = this.authService.getUser()?.id;
+    if (!uid) throw new Error('No hay usuario autenticado');
+    const path = `${uid}/tareas/${fecha}/${parentTaskId}/subtasks`;
+    return this.push(path, input);
+  }
+
+  updateSubtaskName(parentTaskId: string, subtaskId: string, fecha: string, changes: Partial<TaskInput>): Observable<void> {
+    const uid = this.authService.getUser()?.id;
+    if (!uid) throw new Error('No hay usuario autenticado');
+    const path = `${uid}/tareas/${fecha}/${parentTaskId}/subtasks/${subtaskId}`;
+    return from(dbUpdate(ref(this.db, path), stripUndefined(changes)));
+  }
+
+  updateSubtaskEstado(parentTaskId: string, subtaskId: string, fecha: string, estado: string): Observable<void> {
+    const uid = this.authService.getUser()?.id;
+    if (!uid) throw new Error('No hay usuario autenticado');
+    const path = `${uid}/tareas/${fecha}/${parentTaskId}/subtasks/${subtaskId}`;
+    return from(dbUpdate(ref(this.db, path), { estado }));
+  }
+
+  deleteSubtask(parentTaskId: string, subtaskId: string, fecha: string): Observable<void> {
+    const uid = this.authService.getUser()?.id;
+    if (!uid) throw new Error('No hay usuario autenticado');
+    const path = `${uid}/tareas/${fecha}/${parentTaskId}/subtasks/${subtaskId}`;
+    return from(dbRemove(ref(this.db, path)));
+  }
+
+  toggleAllSubtasks(parentTaskId: string, fecha: string, estado: string): Observable<void> {
+    return this.getSubtasks(parentTaskId, fecha).pipe(
+      switchMap((subtasks) => {
+        const updates: Observable<void>[] = subtasks.map((sub) =>
+          this.updateSubtaskEstado(parentTaskId, sub.id, fecha, estado)
+        );
+        return updates.length > 0 ? forkJoin(updates).pipe(map(() => undefined)) : of(undefined);
+      })
+    );
+  }
+
+  swapSubtasks(taskId1: string, taskId2: string, fecha: string): Observable<void> {
+    const uid = this.authService.getUser()?.id;
+    if (!uid) return of(undefined);
+
+    const path1 = `${uid}/tareas/${fecha}/${taskId1}/subtasks`;
+    const path2 = `${uid}/tareas/${fecha}/${taskId2}/subtasks`;
+
+    return from(get(ref(this.db, path1))).pipe(
+      switchMap((snap1) => {
+        const subs1 = snap1.val() || null;
+        return from(get(ref(this.db, path2))).pipe(
+          switchMap((snap2) => {
+            const subs2 = snap2.val() || null;
+            const ops: Observable<void>[] = [];
+
+            // Limpiar paths antiguos
+            ops.push(from(dbRemove(ref(this.db, path1))));
+            ops.push(from(dbRemove(ref(this.db, path2))));
+
+            // Escribir datos intercambiados
+            if (subs2) ops.push(from(set(ref(this.db, path1), subs2)));
+            if (subs1) ops.push(from(set(ref(this.db, path2), subs1)));
+
+            return ops.length > 0 ? forkJoin(ops).pipe(map(() => undefined)) : of(undefined);
+          })
+        );
       })
     );
   }

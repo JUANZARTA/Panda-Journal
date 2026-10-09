@@ -32,4 +32,13 @@ export abstract class TaskRepository {
    * Se llama una vez al abrir la app — no hay backend corriendo a medianoche.
    */
   abstract migratePastDue(hoy: string): Observable<void>;
+
+  // Subtareas
+  abstract getSubtasks(parentTaskId: string, fecha: string): Observable<Task[]>;
+  abstract createSubtask(parentTaskId: string, fecha: string, input: TaskInput): Observable<string>;
+  abstract updateSubtaskName(parentTaskId: string, subtaskId: string, fecha: string, changes: Partial<TaskInput>): Observable<void>;
+  abstract updateSubtaskEstado(parentTaskId: string, subtaskId: string, fecha: string, estado: string): Observable<void>;
+  abstract deleteSubtask(parentTaskId: string, subtaskId: string, fecha: string): Observable<void>;
+  abstract toggleAllSubtasks(parentTaskId: string, fecha: string, estado: string): Observable<void>;
+  abstract swapSubtasks(taskId1: string, taskId2: string, fecha: string): Observable<void>;
 }

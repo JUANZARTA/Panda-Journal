@@ -173,6 +173,13 @@
                 <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
               </button>
               <button
+                (click)="abrirSubtareasModal(task)"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+                title="Subtareas"
+              >
+                <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">checklist</span>
+              </button>
+              <button
                 (click)="eliminarTarea(task)"
                 class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
               >
@@ -297,6 +304,13 @@
                 <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
               </button>
               <button
+                (click)="abrirSubtareasModal(task)"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+                title="Subtareas"
+              >
+                <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">checklist</span>
+              </button>
+              <button
                 (click)="eliminarTarea(task)"
                 class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
               >
@@ -342,3 +356,11 @@
     </div>
   </div>
 </div>
+
+<!-- Subtasks Modal -->
+<app-subtasks-modal
+  *ngIf="subtasksModalVisible() && selectedTaskForSubtasks()"
+  [parentTask]="selectedTaskForSubtasks()!"
+  [fecha]="selectedDate()"
+  (closeModal)="cerrarSubtareasModal()"
+></app-subtasks-modal>

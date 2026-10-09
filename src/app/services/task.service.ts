@@ -113,4 +113,39 @@ export class TaskService {
   migratePastDueTasks(): Observable<void> {
     return this.repo.migratePastDue(formatDate(new Date()));
   }
+
+  // -------- Subtareas --------
+
+  getSubtasks(parentTaskId: string, fecha: string): Observable<Task[]> {
+    return this.repo.getSubtasks(parentTaskId, fecha);
+  }
+
+  createSubtask(parentTaskId: string, fecha: string, input: TaskInput): Observable<string> {
+    return this.repo.createSubtask(parentTaskId, fecha, input);
+  }
+
+  updateSubtaskName(parentTaskId: string, subtaskId: string, fecha: string, nombre: string): Observable<void> {
+    return this.repo.updateSubtaskName(parentTaskId, subtaskId, fecha, { nombre: nombre.trim() });
+  }
+
+  toggleSubtaskComplete(parentTaskId: string, subtaskId: string, fecha: string, estado: string): Observable<void> {
+    const newEstado = estado === 'realizado' ? 'pendiente' : 'realizado';
+    return this.repo.updateSubtaskEstado(parentTaskId, subtaskId, fecha, newEstado);
+  }
+
+  updateSubtaskEstado(parentTaskId: string, subtaskId: string, fecha: string, estado: string): Observable<void> {
+    return this.repo.updateSubtaskEstado(parentTaskId, subtaskId, fecha, estado);
+  }
+
+  deleteSubtask(parentTaskId: string, subtaskId: string, fecha: string): Observable<void> {
+    return this.repo.deleteSubtask(parentTaskId, subtaskId, fecha);
+  }
+
+  toggleAllSubtasks(parentTaskId: string, fecha: string, estado: 'realizado' | 'pendiente'): Observable<void> {
+    return this.repo.toggleAllSubtasks(parentTaskId, fecha, estado);
+  }
+
+  swapSubtasks(taskId1: string, taskId2: string, fecha: string): Observable<void> {
+    return this.repo.swapSubtasks(taskId1, taskId2, fecha);
+  }
 }

@@ -13,11 +13,12 @@ import { DateService, formatDate, parseLocalDate } from '../../services/date.ser
 import { UiStateService } from '../../core/ui-state.service';
 import { Task } from '../../models/task.model';
 import { TaskType } from '../../models/taskType.model';
+import { SubtasksModalComponent } from './components/subtasks-modal.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, SubtasksModalComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
@@ -39,6 +40,10 @@ export default class HomeComponent {
 
   /** 'page-turn-next' | 'page-turn-prev' | '' — se limpia solo al terminar la animación (ver (animationend) en el template). */
   pageAnimClass = signal('');
+
+  // Subtasks modal
+  subtasksModalVisible = signal(false);
+  selectedTaskForSubtasks = signal<Task | undefined>(undefined);
 
   tareasPorCategoria = computed(() => {
     const map = new Map<string, Task[]>();
@@ -119,7 +124,11 @@ export default class HomeComponent {
   }
 
   toggleTask(task: Task): void {
-    this.taskService.toggleEstado(task).subscribe();
+    const nuevoEstado = task.estado === 'realizado' ? 'pendiente' : 'realizado';
+    this.taskService.toggleEstado(task).subscribe(() => {
+      // Si la tarea tiene subtareas, marcar/desmarcar todas
+      this.taskService.toggleAllSubtasks(task.id, this.selectedDate(), nuevoEstado).subscribe();
+    });
   }
 
   agregarTarea(categoriaId: string): void {
@@ -233,6 +242,9 @@ export default class HomeComponent {
 
     this.taskService.updateTask(task.id, { nombre: taskAnterior.nombre, nota: taskAnterior.nota, estado: taskAnterior.estado }).subscribe();
     this.taskService.updateTask(taskAnterior.id, { nombre: tempNombre, nota: tempNota, estado: tempEstado }).subscribe();
+
+    // Intercambiar subtareas también
+    this.taskService.swapSubtasks(task.id, taskAnterior.id, this.selectedDate()).subscribe();
   }
 
   moverTareaAbajo(task: Task, categoriaId: string): void {
@@ -249,6 +261,19 @@ export default class HomeComponent {
 
     this.taskService.updateTask(task.id, { nombre: taskSiguiente.nombre, nota: taskSiguiente.nota, estado: taskSiguiente.estado }).subscribe();
     this.taskService.updateTask(taskSiguiente.id, { nombre: tempNombre, nota: tempNota, estado: tempEstado }).subscribe();
+
+    // Intercambiar subtareas también
+    this.taskService.swapSubtasks(task.id, taskSiguiente.id, this.selectedDate()).subscribe();
+  }
+
+  abrirSubtareasModal(task: Task): void {
+    this.selectedTaskForSubtasks.set(task);
+    this.subtasksModalVisible.set(true);
+  }
+
+  cerrarSubtareasModal(): void {
+    this.subtasksModalVisible.set(false);
+    this.selectedTaskForSubtasks.set(undefined);
   }
 
 }

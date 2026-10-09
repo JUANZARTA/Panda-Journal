@@ -83,8 +83,6 @@ export class RecurringTaskService {
             // Crea todas las que no existen
             if (tasksToCreate.length === 0) return from([undefined]);
 
-            if (tasksToCreate.length === 0) return from([undefined]);
-
             return forkJoin(
               tasksToCreate.map((recurring) =>
                 this.taskRepo.create(today, {
