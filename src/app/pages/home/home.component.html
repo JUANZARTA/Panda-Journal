@@ -125,7 +125,7 @@
 
           <div
             *ngFor="let task of tareasDe(categoriaId); trackBy: trackByTaskId"
-            class="flex items-start gap-3 py-1.5 group"
+            class="flex items-start gap-2 md:gap-3 py-1.5 group"
           >
             <button
               (click)="toggleTask(task)"
@@ -154,7 +154,7 @@
                   [title]="task.subtareasHechas + ' de ' + task.subtareasTotal + ' subtareas completas'"
                 >{{ task.subtareasTotal }}</button>
               </span>
-              <div class="flex gap-1 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition">
+              <div class="hidden md:flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition">
                 <button
                   (click)="moverTareaArriba(task, categoriaId)"
                   [disabled]="!puedeSubir(task, categoriaId)"
@@ -174,21 +174,21 @@
               </div>
               <button
                 (click)="abrirMoverTarea(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
                 title="Mover a otro día"
               >
                 <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
               </button>
               <button
                 (click)="abrirSubtareasModal(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
                 title="Subtareas"
               >
                 <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">checklist</span>
               </button>
               <button
                 (click)="eliminarTarea(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
               >
                 <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
               </button>
@@ -263,7 +263,7 @@
 
           <div
             *ngFor="let task of tareasDe(categoriaId); trackBy: trackByTaskId"
-            class="flex items-start gap-3 py-1.5 group"
+            class="flex items-start gap-2 md:gap-3 py-1.5 group"
           >
             <button
               (click)="toggleTask(task)"
@@ -292,7 +292,7 @@
                   [title]="task.subtareasHechas + ' de ' + task.subtareasTotal + ' subtareas completas'"
                 >{{ task.subtareasTotal }}</button>
               </span>
-              <div class="flex gap-1 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition">
+              <div class="hidden md:flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition">
                 <button
                   (click)="moverTareaArriba(task, categoriaId)"
                   [disabled]="!puedeSubir(task, categoriaId)"
@@ -312,21 +312,21 @@
               </div>
               <button
                 (click)="abrirMoverTarea(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
                 title="Mover a otro día"
               >
                 <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
               </button>
               <button
                 (click)="abrirSubtareasModal(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
                 title="Subtareas"
               >
                 <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">checklist</span>
               </button>
               <button
                 (click)="eliminarTarea(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
+                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
               >
                 <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
               </button>
