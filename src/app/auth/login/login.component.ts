@@ -9,6 +9,7 @@ import {  FormBuilder,
 import { AuthService } from '../../services/auth.service';
 import { DateService } from '../../services/date.service';
 import { PwaInstallService } from '../../core/pwa-install.service';
+import { APP_VERSION } from '../../core/version';
 
 @Component({
   selector: 'app-login',
@@ -23,6 +24,7 @@ export class LoginComponent implements OnInit {
   private authService = inject(AuthService);
   private dateService = inject(DateService);
   pwaInstall = inject(PwaInstallService);
+  version = APP_VERSION;
   showPassword: boolean = false;
 
   loginForm: FormGroup;
