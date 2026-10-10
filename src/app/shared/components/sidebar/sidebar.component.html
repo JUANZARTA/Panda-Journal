@@ -106,8 +106,9 @@
   <!-- Actividad actual (desde Itinerario) -->
   <div *ngIf="currentActivity().activity && currentActivity().block && !uiState.isSidebarCollapsed()" class="px-3 mb-3">
     <div
-      class="p-2 rounded-lg text-xs font-medium text-white flex items-center gap-2 border-l-4"
+      class="p-2 rounded-lg text-xs font-medium flex items-center gap-2 border-l-4"
       [style.background-color]="currentActivity().activity!.color + '80'"
+      [style.color]="textoSobreActividad(currentActivity().activity!.color)"
       [style.border-left-color]="currentActivity().activity!.color"
     >
       <span class="material-icons text-sm flex-shrink-0">schedule</span>

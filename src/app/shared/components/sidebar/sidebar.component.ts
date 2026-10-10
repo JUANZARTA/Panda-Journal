@@ -84,6 +84,21 @@ export class SidebarComponent implements OnInit {
     if (!clickedInside && !clickedToggle) this.showNotifications = false;
   }
 
+  /** Texto negro o blanco según la luminancia del color de la actividad mezclado al 50% con el papel del modo actual. */
+  textoSobreActividad(hex: string): string {
+    const m = /^#?([0-9a-f]{6})/i.exec(hex ?? '');
+    if (!m) return 'var(--ink)';
+    const papel = this.uiState.isDarkMode() ? [35, 35, 35] : [253, 249, 239];
+    const rgb = [0, 2, 4].map((i, k) => (parseInt(m[1].slice(i, i + 2), 16) + papel[k]) / 2);
+    const [r, g, b] = rgb.map((c) => {
+      const s = c / 255;
+      return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    });
+    const luminancia = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    // 0.179 = punto donde negro y blanco tienen el mismo contraste (WCAG).
+    return luminancia > 0.179 ? '#1a1a1a' : '#ffffff';
+  }
+
   logout(): void {
     // Con huella activa, "Salir" bloquea en vez de cerrar la sesión de Firebase: sin backend, la huella no puede reabrir una sesión cerrada.
     if (this.biometric.isEnabled()) {
