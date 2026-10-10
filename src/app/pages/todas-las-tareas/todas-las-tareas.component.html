@@ -47,159 +47,169 @@
 
   <!-- Filtros -->
   <div class="notebook-page rounded-lg shadow-page px-5 md:px-8 py-5 mb-4">
-    <div class="flex flex-wrap gap-2 mb-4">
-      <button
-        (click)="mostrarCuaderno.set(!mostrarCuaderno())"
-        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
-        [class.bg-accent]="mostrarCuaderno()"
-        [class.text-white]="mostrarCuaderno()"
-        [class.border-accent]="mostrarCuaderno()"
-        [class.text-ink-faint]="!mostrarCuaderno()"
-        [class.border-paper-line]="!mostrarCuaderno()"
-      >
-        Cuaderno
-      </button>
-      <button
-        (click)="mostrarOtras.set(!mostrarOtras())"
-        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
-        [class.bg-accent]="mostrarOtras()"
-        [class.text-white]="mostrarOtras()"
-        [class.border-accent]="mostrarOtras()"
-        [class.text-ink-faint]="!mostrarOtras()"
-        [class.border-paper-line]="!mostrarOtras()"
-      >
-        Otras tareas
-      </button>
-      <button
-        (click)="mostrarPerdidas.set(!mostrarPerdidas())"
-        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
-        [class.bg-accent]="mostrarPerdidas()"
-        [class.text-white]="mostrarPerdidas()"
-        [class.border-accent]="mostrarPerdidas()"
-        [class.text-ink-faint]="!mostrarPerdidas()"
-        [class.border-paper-line]="!mostrarPerdidas()"
-      >
-        Perdidas
-      </button>
-
-      <span class="w-px h-5 bg-paper-line mx-1 self-center"></span>
-
-      <button
-        (click)="filtroEstado.set('todas')"
-        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
-        [class.bg-accent]="filtroEstado() === 'todas'"
-        [class.text-white]="filtroEstado() === 'todas'"
-        [class.border-accent]="filtroEstado() === 'todas'"
-        [class.text-ink-faint]="filtroEstado() !== 'todas'"
-        [class.border-paper-line]="filtroEstado() !== 'todas'"
-      >
-        Todas
-      </button>
-      <button
-        (click)="filtroEstado.set('completas')"
-        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
-        [class.bg-accent]="filtroEstado() === 'completas'"
-        [class.text-white]="filtroEstado() === 'completas'"
-        [class.border-accent]="filtroEstado() === 'completas'"
-        [class.text-ink-faint]="filtroEstado() !== 'completas'"
-        [class.border-paper-line]="filtroEstado() !== 'completas'"
-      >
-        Completas
-      </button>
-      <button
-        (click)="filtroEstado.set('incompletas')"
-        class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
-        [class.bg-accent]="filtroEstado() === 'incompletas'"
-        [class.text-white]="filtroEstado() === 'incompletas'"
-        [class.border-accent]="filtroEstado() === 'incompletas'"
-        [class.text-ink-faint]="filtroEstado() !== 'incompletas'"
-        [class.border-paper-line]="filtroEstado() !== 'incompletas'"
-      >
-        Incompletas
-      </button>
-
-      <span class="w-px h-5 bg-paper-line mx-1 self-center"></span>
-
-      <!-- Botón Categorías con dropdown -->
-      <div class="relative" data-dropdown-categorias>
+    <!-- Búsqueda -->
+    <div class="mb-4">
+      <div class="relative">
+        <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint pointer-events-none" style="font-size: 18px">search</span>
+        <input
+          type="text"
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+          placeholder="Buscar tareas…"
+          class="w-full rounded-full bg-paper border border-paper-line focus:border-accent focus:outline-none text-sm text-ink placeholder:text-ink-faint pl-10 pr-10 py-2 transition"
+        />
         <button
-          (click)="abrirDropdownCategorias(); $event.stopPropagation()"
-          class="text-xs font-semibold px-3 py-1.5 rounded-full border transition flex items-center gap-1"
-          [class.bg-accent]="categoriasSeleccionadas().size > 0"
-          [class.text-white]="categoriasSeleccionadas().size > 0"
-          [class.border-accent]="categoriasSeleccionadas().size > 0"
-          [class.text-ink-faint]="categoriasSeleccionadas().size === 0"
-          [class.border-paper-line]="categoriasSeleccionadas().size === 0"
+          *ngIf="busqueda()"
+          (click)="busqueda.set('')"
+          class="absolute right-2 top-1/2 -translate-y-1/2 p-1 flex items-center"
+          title="Limpiar búsqueda"
         >
-          <span class="material-icons" style="font-size: 14px">category</span>
-          Categorías
-          <span class="material-icons text-xs">{{ mostrarDropdownCategorias() ? 'expand_less' : 'expand_more' }}</span>
+          <span class="material-icons text-ink-faint hover:text-ink" style="font-size: 16px">close</span>
         </button>
+      </div>
+      <p *ngIf="busqueda().trim() && (fechaDesde() || fechaHasta())" class="text-xs text-ink-faint mt-1.5 px-1">
+        Buscando solo del {{ fechaDesde() || '…' }} al {{ fechaHasta() || '…' }} ·
+        <button (click)="limpiarFechas()" class="text-accent underline">Buscar en todas las fechas</button>
+      </p>
+    </div>
 
-        <!-- Dropdown de categorías -->
-        <div
-          *ngIf="mostrarDropdownCategorias()"
-          class="absolute top-full left-0 mt-1 bg-paper-raised border border-paper-line rounded-lg shadow-page z-10 min-w-max"
-        >
-          <div class="p-2 max-h-64 overflow-y-auto">
-            <div *ngFor="let cat of categorias()" class="flex items-center gap-2 py-1.5 px-2 hover:bg-paper-line/30 rounded cursor-pointer" (click)="toggleCategoriaFiltro(cat.id)">
-              <input
-                type="checkbox"
-                [checked]="estaCategoriaSeleccionada(cat.id)"
-                (change)="toggleCategoriaFiltro(cat.id)"
-                class="w-4 h-4 rounded cursor-pointer"
-              />
-              <label class="flex-1 cursor-pointer text-xs font-medium text-ink">
-                {{ cat.nombre }}
-              </label>
+    <!-- Origen / Estado / Categorías -->
+    <div class="flex flex-wrap gap-x-6 gap-y-3 mb-4">
+      <div>
+        <p class="text-[10px] uppercase tracking-wide text-ink-faint mb-1">Origen</p>
+        <div class="flex flex-wrap gap-2">
+          <button
+            (click)="mostrarCuaderno.set(!mostrarCuaderno())"
+            class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
+            [ngClass]="mostrarCuaderno() ? 'bg-accent text-white dark:text-black border-accent' : 'text-ink-faint border-paper-line'"
+          >
+            Cuaderno
+          </button>
+          <button
+            (click)="mostrarOtras.set(!mostrarOtras())"
+            class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
+            [ngClass]="mostrarOtras() ? 'bg-accent text-white dark:text-black border-accent' : 'text-ink-faint border-paper-line'"
+          >
+            Otras tareas
+          </button>
+          <button
+            (click)="mostrarPerdidas.set(!mostrarPerdidas())"
+            class="text-xs font-semibold px-3 py-1.5 rounded-full border transition"
+            [ngClass]="mostrarPerdidas() ? 'bg-accent text-white dark:text-black border-accent' : 'text-ink-faint border-paper-line'"
+          >
+            Perdidas
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-[10px] uppercase tracking-wide text-ink-faint mb-1">Estado</p>
+        <div class="inline-flex rounded-full border border-paper-line overflow-hidden">
+          <button
+            (click)="filtroEstado.set('todas')"
+            class="text-xs font-semibold px-3 py-1.5 transition"
+            [ngClass]="filtroEstado() === 'todas' ? 'bg-accent text-white dark:text-black' : 'text-ink-faint hover:bg-accent-soft/40'"
+          >
+            Todas
+          </button>
+          <button
+            (click)="filtroEstado.set('completas')"
+            class="text-xs font-semibold px-3 py-1.5 border-l border-paper-line transition"
+            [ngClass]="filtroEstado() === 'completas' ? 'bg-accent text-white dark:text-black' : 'text-ink-faint hover:bg-accent-soft/40'"
+          >
+            Completas
+          </button>
+          <button
+            (click)="filtroEstado.set('incompletas')"
+            class="text-xs font-semibold px-3 py-1.5 border-l border-paper-line transition"
+            [ngClass]="filtroEstado() === 'incompletas' ? 'bg-accent text-white dark:text-black' : 'text-ink-faint hover:bg-accent-soft/40'"
+          >
+            Incompletas
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-[10px] uppercase tracking-wide text-ink-faint mb-1">Categorías</p>
+        <div class="relative" data-dropdown-categorias>
+          <button
+            (click)="abrirDropdownCategorias(); $event.stopPropagation()"
+            class="text-xs font-semibold px-3 py-1.5 rounded-full border transition flex items-center gap-1"
+            [ngClass]="categoriasSeleccionadas().size > 0 ? 'bg-accent text-white dark:text-black border-accent' : 'text-ink-faint border-paper-line'"
+          >
+            <span class="material-icons" style="font-size: 14px">category</span>
+            Categorías
+            <span class="material-icons text-xs">{{ mostrarDropdownCategorias() ? 'expand_less' : 'expand_more' }}</span>
+          </button>
+
+          <!-- Dropdown de categorías -->
+          <div
+            *ngIf="mostrarDropdownCategorias()"
+            class="absolute top-full left-0 mt-1 bg-paper-raised border border-paper-line rounded-lg shadow-page z-10 min-w-max"
+          >
+            <div class="p-2 max-h-64 overflow-y-auto">
+              <div *ngFor="let cat of categorias()" class="flex items-center gap-2 py-1.5 px-2 hover:bg-paper-line/30 rounded cursor-pointer" (click)="toggleCategoriaFiltro(cat.id)">
+                <input
+                  type="checkbox"
+                  [checked]="estaCategoriaSeleccionada(cat.id)"
+                  (change)="toggleCategoriaFiltro(cat.id)"
+                  class="w-4 h-4 rounded cursor-pointer"
+                />
+                <label class="flex-1 cursor-pointer text-xs font-medium text-ink">
+                  {{ cat.nombre }}
+                </label>
+              </div>
             </div>
-          </div>
-          <div *ngIf="categoriasSeleccionadas().size > 0" class="border-t border-paper-line p-2">
-            <button
-              (click)="limpiarFiltrocategorias()"
-              class="text-xs text-accent hover:underline w-full text-left"
-            >
-              Limpiar filtro
-            </button>
+            <div *ngIf="categoriasSeleccionadas().size > 0" class="border-t border-paper-line p-2">
+              <button
+                (click)="limpiarFiltrocategorias()"
+                class="text-xs text-accent hover:underline w-full text-left"
+              >
+                Limpiar filtro
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="flex flex-wrap items-center gap-3 text-sm text-ink-soft">
-      <button
-        (click)="abrirSelectorMes()"
-        class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-accent text-accent hover:bg-accent-soft/40 transition"
-      >
-        <span class="material-icons" style="font-size: 16px">calendar_month</span>
-        Cambiar mes
-      </button>
-      <span class="w-px h-5 bg-paper-line self-center"></span>
-      <label class="flex items-center gap-2">
-        Desde
-        <input
-          type="date"
-          [ngModel]="fechaDesde()"
-          (ngModelChange)="fechaDesde.set($event)"
-          class="bg-transparent border-b border-paper-line focus:border-accent focus:outline-none text-ink"
-        />
-      </label>
-      <label class="flex items-center gap-2">
-        Hasta
-        <input
-          type="date"
-          [ngModel]="fechaHasta()"
-          (ngModelChange)="fechaHasta.set($event)"
-          class="bg-transparent border-b border-paper-line focus:border-accent focus:outline-none text-ink"
-        />
-      </label>
-      <button
-        *ngIf="fechaDesde() || fechaHasta()"
-        (click)="fechaDesde.set(''); fechaHasta.set('')"
-        class="text-xs text-accent underline"
-      >
-        Limpiar fechas
-      </button>
+    <!-- Fechas -->
+    <div>
+      <p class="text-[10px] uppercase tracking-wide text-ink-faint mb-1">Fechas</p>
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ink-soft">
+        <button
+          (click)="abrirSelectorMes()"
+          class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-accent text-accent hover:bg-accent-soft/40 transition"
+        >
+          <span class="material-icons" style="font-size: 16px">calendar_month</span>
+          Cambiar mes
+        </button>
+        <label class="flex items-center gap-2 text-xs">
+          Desde
+          <input
+            type="date"
+            [ngModel]="fechaDesde()"
+            (ngModelChange)="fechaDesde.set($event)"
+            class="bg-transparent border-b border-paper-line focus:border-accent focus:outline-none text-sm text-ink"
+          />
+        </label>
+        <label class="flex items-center gap-2 text-xs">
+          Hasta
+          <input
+            type="date"
+            [ngModel]="fechaHasta()"
+            (ngModelChange)="fechaHasta.set($event)"
+            class="bg-transparent border-b border-paper-line focus:border-accent focus:outline-none text-sm text-ink"
+          />
+        </label>
+        <button
+          *ngIf="fechaDesde() || fechaHasta()"
+          (click)="limpiarFechas()"
+          class="text-xs text-accent underline"
+        >
+          Limpiar fechas
+        </button>
+      </div>
     </div>
   </div>
 
@@ -324,7 +334,8 @@
     </div>
 
     <div *ngIf="filas().length === 0" class="text-center text-ink-faint py-8 text-sm">
-      No hay tareas con estos filtros.
+      <ng-container *ngIf="busqueda().trim(); else sinBusqueda">No hay tareas que coincidan con “{{ busqueda().trim() }}”.</ng-container>
+      <ng-template #sinBusqueda>No hay tareas con estos filtros.</ng-template>
     </div>
   </div>
 

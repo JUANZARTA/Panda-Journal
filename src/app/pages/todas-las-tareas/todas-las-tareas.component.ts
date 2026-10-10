@@ -49,6 +49,8 @@ export default class TodasLasTareasComponent {
   // Filtro por estado
   filtroEstado = signal<'todas' | 'completas' | 'incompletas'>('todas');
 
+  busqueda = signal('');
+
   // Filtro por categoría (dropdown)
   categoriasSeleccionadas = signal<Set<string>>(new Set());
   mostrarDropdownCategorias = signal(false);
@@ -83,6 +85,12 @@ export default class TodasLasTareasComponent {
         const categoriasSeleccionadas = this.categoriasSeleccionadas();
         if (categoriasSeleccionadas.size === 0) return true;
         return categoriasSeleccionadas.has(f.task.categoriaId);
+      })
+      .filter((f) => {
+        const q = this.normalizar(this.busqueda());
+        if (!q) return true;
+        const nota = (f.task as { nota?: string }).nota ?? '';
+        return this.normalizar(f.task.nombre).includes(q) || this.normalizar(nota).includes(q);
       })
       .sort((a, b) => {
         if (a.fecha === b.fecha) return 0;
@@ -251,6 +259,15 @@ export default class TodasLasTareasComponent {
       next: () => this.cancelarReasignar(),
       error: (err) => console.error('[ERROR] Al reasignar fecha:', err),
     });
+  }
+
+  private normalizar(texto: string): string {
+    return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  }
+
+  limpiarFechas(): void {
+    this.fechaDesde.set('');
+    this.fechaHasta.set('');
   }
 
   private dentroDelRango(fecha: string): boolean {
