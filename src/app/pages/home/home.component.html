@@ -105,8 +105,7 @@
 </div>
 
 <!-- Cuaderno - Contenedor principal -->
-<div class="flex-1 w-full py-6 md:py-12 transition-all duration-300"
-  [style.margin-left.px]="uiState.isSidebarCollapsed() ? -80 : 0">
+<div class="flex-1 w-full py-6 md:py-12">
   <div class="notebook-container">
     <!-- La hoja del día - Layout de cuaderno abierto -->
     <div
@@ -131,12 +130,12 @@
               (click)="toggleTask(task)"
               class="relative overflow-hidden mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
               [ngClass]="task.estado === 'realizado' ? 'bg-done border-done' : 'border-ink-faint'"
+            >
               <span
                 *ngIf="task.estado !== 'realizado' && task.subtareasTotal"
                 class="absolute inset-x-0 bottom-0 bg-accent opacity-90 transition-all duration-300"
                 [style.height.%]="((task.subtareasHechas ?? 0) * 100) / task.subtareasTotal"
               ></span>
-            >
               <span *ngIf="task.estado === 'realizado'" class="material-icons text-white" style="font-size: 14px">
                 check
               </span>
@@ -274,12 +273,12 @@
               (click)="toggleTask(task)"
               class="relative overflow-hidden mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
               [ngClass]="task.estado === 'realizado' ? 'bg-done border-done' : 'border-ink-faint'"
+            >
               <span
                 *ngIf="task.estado !== 'realizado' && task.subtareasTotal"
                 class="absolute inset-x-0 bottom-0 bg-accent opacity-90 transition-all duration-300"
                 [style.height.%]="((task.subtareasHechas ?? 0) * 100) / task.subtareasTotal"
               ></span>
-            >
               <span *ngIf="task.estado === 'realizado'" class="material-icons text-white" style="font-size: 14px">
                 check
               </span>

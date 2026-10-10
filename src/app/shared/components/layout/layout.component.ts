@@ -1,5 +1,7 @@
 import { Component, inject } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { HeaderComponent } from '../header/header.component';
+import { UiStateService } from '../../../core/ui-state.service';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { RouterOutlet } from '@angular/router';
 import { TaskService } from '../../../services/task.service';
@@ -8,11 +10,12 @@ import { RecurringTaskService } from '../../../services/recurring-task.service';
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [HeaderComponent, SidebarComponent, RouterOutlet],
+  imports: [NgClass, HeaderComponent, SidebarComponent, RouterOutlet],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
 })
 export class LayoutComponent {
+  uiState = inject(UiStateService);
   private taskService = inject(TaskService);
   private recurringTaskService = inject(RecurringTaskService);
 
