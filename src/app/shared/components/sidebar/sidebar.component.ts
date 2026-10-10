@@ -7,6 +7,7 @@ import { combineLatest, take, startWith } from 'rxjs';
 import { UiStateService } from '../../../core/ui-state.service';
 import { PwaInstallService } from '../../../core/pwa-install.service';
 import { APP_VERSION } from '../../../core/version';
+import { BiometricService } from '../../../core/biometric.service';
 import { AuthService } from '../../../services/auth.service';
 import { NotificacionService } from '../../../services/notificacion.service';
 import { TaskService } from '../../../services/task.service';
@@ -24,6 +25,7 @@ import { Task } from '../../../models/task.model';
 export class SidebarComponent implements OnInit {
   uiState = inject(UiStateService);
   pwaInstall = inject(PwaInstallService);
+  biometric = inject(BiometricService);
   private router = inject(Router);
   private authService = inject(AuthService);
   private notificacionService = inject(NotificacionService);
@@ -50,7 +52,29 @@ export class SidebarComponent implements OnInit {
   notifications: any[] = [];
   unreadCount = 0;
 
+  biometricSupported = signal(false);
+  biometricBusy = signal(false);
+
+  async toggleBiometric(): Promise<void> {
+    if (this.biometricBusy()) return;
+    if (this.biometric.enabled()) {
+      this.biometric.disable();
+      return;
+    }
+    const uid = this.authService.getUser()?.id;
+    if (!uid) return;
+    this.biometricBusy.set(true);
+    try {
+      await this.biometric.enable(uid);
+    } catch {
+      // el mensaje queda en biometric.error()
+    } finally {
+      this.biometricBusy.set(false);
+    }
+  }
+
   ngOnInit(): void {
+    this.biometric.isSupported().then((ok) => this.biometricSupported.set(ok));
     // Notificaciones desactivadas: estaban generando avisos incorrectos (ej. en
     // cuentas recién creadas, sin tareas todavía). Queda el código de abajo por
     // si se retoma más adelante, pero no se llama a nada acá.
@@ -83,7 +107,13 @@ export class SidebarComponent implements OnInit {
   }
 
   logout(): void {
-    this.authService.logout();
+    // Con huella activa, "Salir" bloquea en vez de cerrar la sesión de Firebase: sin backend, la huella no puede reabrir una sesión cerrada.
+    if (this.biometric.isEnabled()) {
+      this.biometric.locked.set(true);
+    } else {
+      this.authService.logout();
+    }
+    this.uiState.closeDrawer();
     this.router.navigate(['/login']);
   }
 

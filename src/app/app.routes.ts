@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard'; // 👈 Importa tu guard
+import { BiometricLockGuard } from './guards/biometric-lock.guard';
 export const routes: Routes = [
   {
     path: '',
@@ -16,7 +17,7 @@ export const routes: Routes = [
   },
   {
     path: 'app',
-    canActivate: [AuthGuard], // ✅ Aquí aplicas el guard a TODA la sección protegida
+    canActivate: [AuthGuard, BiometricLockGuard], // ✅ Aquí aplicas el guard a TODA la sección protegida
     loadComponent: () =>
       import('./shared/components/layout/layout.component').then((m) => m.LayoutComponent),
     children: [

@@ -57,6 +57,23 @@
         <span class="font-medium text-sm">Iniciar sesión con Google</span>
       </button>
 
+      <!-- Ingreso con huella (solo celular) -->
+      <div *ngIf="biometricAvailable()" class="md:hidden flex flex-col items-center mt-6">
+        <button
+          type="button"
+          (click)="loginWithBiometric()"
+          [disabled]="biometricBusy()"
+          class="w-24 h-24 rounded-full bg-paper border border-paper-line shadow-sm flex flex-col items-center justify-center gap-1 text-ink hover:bg-accent-soft/40 transition disabled:opacity-50"
+        >
+          <span class="material-icons text-accent" style="font-size: 32px">fingerprint</span>
+          <span class="text-xs leading-tight text-center">Ingresá con<br />huella</span>
+        </button>
+        <p *ngIf="biometric.error()" class="text-overdue text-xs mt-2 text-center">{{ biometric.error() }}</p>
+        <button type="button" (click)="useOtherAccount()" class="text-xs text-ink-faint underline mt-3">
+          Usar otra cuenta
+        </button>
+      </div>
+
       <!-- Enlace a Registro -->
       <p class="text-center text-sm text-ink-faint mt-6">
         ¿No tenés cuenta?

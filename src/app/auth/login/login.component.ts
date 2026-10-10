@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import {  FormBuilder,
@@ -10,6 +10,7 @@ import { AuthService } from '../../services/auth.service';
 import { DateService } from '../../services/date.service';
 import { PwaInstallService } from '../../core/pwa-install.service';
 import { APP_VERSION } from '../../core/version';
+import { BiometricService } from '../../core/biometric.service';
 
 @Component({
   selector: 'app-login',
@@ -25,6 +26,9 @@ export class LoginComponent implements OnInit {
   private dateService = inject(DateService);
   pwaInstall = inject(PwaInstallService);
   version = APP_VERSION;
+  biometric = inject(BiometricService);
+  biometricAvailable = signal(false);
+  biometricBusy = signal(false);
   showPassword: boolean = false;
 
   loginForm: FormGroup;
@@ -45,7 +49,28 @@ export class LoginComponent implements OnInit {
     });
   }
 
-ngOnInit(): void {}
+  ngOnInit(): void {
+    if (!this.authService.isLoggedIn() || !this.biometric.isEnabled()) return;
+    if (!this.biometric.locked()) {
+      this.router.navigate(['app/home']);
+      return;
+    }
+    this.biometric.isSupported().then((ok) => this.biometricAvailable.set(ok));
+  }
+
+  async loginWithBiometric(): Promise<void> {
+    if (this.biometricBusy()) return;
+    this.biometricBusy.set(true);
+    const ok = await this.biometric.unlock();
+    this.biometricBusy.set(false);
+    if (ok) this.showWelcomeModal(this.authService.getUser()?.displayName ?? '');
+  }
+
+  useOtherAccount(): void {
+    this.biometric.locked.set(false);
+    this.authService.logout();
+    this.biometricAvailable.set(false);
+  }
 
 
   isInvalid(controlName: string): boolean {
@@ -66,6 +91,7 @@ ngOnInit(): void {}
         next: (res) => {
           const uid = res.localId;
           this.loginSuccess = true; // Indica éxito
+          this.biometric.locked.set(false);
 
           this.authService.getUserData(uid).subscribe({
             next: (userData) => {
@@ -143,6 +169,7 @@ ngOnInit(): void {}
       .loginWithGoogle()
       .then((result) => {
         if (result?.user) {
+          this.biometric.locked.set(false);
           this.welcomeName = result.user.displayName || 'Usuario';
           this.showSuccessModal = true;
           setTimeout(() => {

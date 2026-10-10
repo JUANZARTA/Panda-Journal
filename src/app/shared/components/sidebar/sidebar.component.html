@@ -170,6 +170,24 @@
     </button>
   </div>
 
+  <!-- Huella -->
+  <div *ngIf="biometricSupported()" class="px-3 mt-1 md:hidden">
+    <button
+      (click)="toggleBiometric()"
+      [disabled]="biometricBusy()"
+      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition disabled:opacity-40"
+      [title]="uiState.isSidebarCollapsed() ? (biometric.enabled() ? 'Desactivar huella' : 'Activar huella') : ''"
+    >
+      <span class="material-icons text-lg flex-shrink-0">fingerprint</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">{{ biometric.enabled() ? 'Desactivar huella' : 'Activar huella' }}</span>
+    </button>
+    <p
+      *ngIf="biometric.error() && !biometric.enabled()"
+      class="px-3 mt-1 text-xs text-overdue"
+      [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()"
+    >{{ biometric.error() }}</p>
+  </div>
+
   <!-- Salir -->
   <div class="px-3 pb-4 mt-1">
     <button
