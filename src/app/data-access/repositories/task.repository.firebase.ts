@@ -87,13 +87,7 @@ export class FirebaseTaskRepository extends TaskRepository {
     if (!uid) throw new Error('No hay usuario activo');
     if (fechaActual === fechaNueva) return of(undefined);
 
-    const { id, subtareasTotal, subtareasHechas, ...data } = task;
-    const updates: Record<string, unknown> = {
-      [`tareas/${fechaActual}/${id}`]: null,
-      [`tareas/${fechaNueva}/${id}`]: stripUndefined(data),
-    };
-
-    return from(dbUpdate(ref(this.db, uid), updates));
+    return this.moveRawNode(uid, `tareas/${fechaActual}/${task.id}`, `tareas/${fechaNueva}/${task.id}`);
   }
 
   // -------- Sin fecha ("Otras tareas") --------
@@ -152,6 +146,14 @@ export class FirebaseTaskRepository extends TaskRepository {
     );
   }
 
+  watchLostHistory(): Observable<Record<string, Record<string, string>>> {
+    const uid = this.periodPath.uid();
+    if (!uid) return of({});
+    return watchValue<Record<string, Record<string, string>> | null>(ref(this.db, `${uid}/historial_perdidas`)).pipe(
+      map((h) => h ?? {})
+    );
+  }
+
   updateLost(taskId: string, changes: Partial<TaskInput>): Observable<void> {
     const path = this.periodPath.lostTasksPath();
     if (!path) throw new Error('No hay usuario activo');
@@ -168,13 +170,11 @@ export class FirebaseTaskRepository extends TaskRepository {
     const uid = this.periodPath.uid();
     if (!uid) throw new Error('No hay usuario activo');
 
-    const { id, fechaOriginal, ...data } = task;
-    const updates: Record<string, unknown> = {
-      [`tareas_perdidas/${id}`]: null,
-      [`tareas/${fecha}/${id}`]: stripUndefined(data),
-    };
-
-    return from(dbUpdate(ref(this.db, uid), updates));
+    return this.moveRawNode(uid, `tareas_perdidas/${task.id}`, `tareas/${fecha}/${task.id}`, ['fechaOriginal'], (raw) =>
+      typeof raw['fechaOriginal'] === 'string'
+        ? { [`historial_perdidas/${raw['fechaOriginal']}/${task.id}`]: raw['nombre'] ?? '' }
+        : {}
+    );
   }
 
   // Escanea tareas/{fecha} para fecha < hoy (ventana acotada hacia atrás) y migra
@@ -199,6 +199,8 @@ export class FirebaseTaskRepository extends TaskRepository {
             if (tarea.estado === 'realizado') continue;
             updates[`tareas/${fecha}/${taskId}`] = null;
             updates[`tareas_perdidas/${taskId}`] = stripUndefined({ ...tarea, fechaOriginal: fecha });
+            // Registro de auditoría que sobrevive a la reprogramación: nunca se borra.
+            updates[`historial_perdidas/${fecha}/${taskId}`] = tarea.nombre ?? '';
             huboAlgo = true;
           }
         }
@@ -282,6 +284,25 @@ export class FirebaseTaskRepository extends TaskRepository {
             return ops.length > 0 ? forkJoin(ops).pipe(map(() => undefined)) : of(undefined);
           })
         );
+      })
+    );
+  }
+
+  // Copia el nodo crudo (con subtasks incluidas) y borra el origen en un único update atómico.
+  private moveRawNode(
+    uid: string,
+    from_: string,
+    to: string,
+    omit: string[] = [],
+    extra: (raw: Record<string, unknown>) => Record<string, unknown> = () => ({})
+  ): Observable<void> {
+    return from(get(ref(this.db, `${uid}/${from_}`))).pipe(
+      switchMap((snap) => {
+        const raw = snap.val() as Record<string, unknown> | null;
+        if (!raw) return of(undefined);
+        const data = { ...raw };
+        omit.forEach((k) => delete data[k]);
+        return from(dbUpdate(ref(this.db, uid), { [from_]: null, [to]: data, ...extra(raw) }));
       })
     );
   }

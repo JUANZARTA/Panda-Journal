@@ -29,6 +29,7 @@ export const routes: Routes = [
       { path: 'itinerario', loadComponent: () => import('./pages/itinerario/itinerario.component').then(m => m.ItinerarioComponent) },
       { path: 'tareas-recurrentes', loadComponent: () => import('./pages/recurring-tasks/recurring-tasks.component') },
       { path: 'configuracion', loadComponent: () => import('./pages/settings/settings.component') },
+      { path: 'estadisticas', loadComponent: () => import('./pages/stats/stats.component') },
       { path: '', redirectTo: 'home', pathMatch: 'full' }
     ]
   },

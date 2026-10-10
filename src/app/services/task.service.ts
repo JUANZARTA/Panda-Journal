@@ -90,6 +90,10 @@ export class TaskService {
     return this.repo.watchLost();
   }
 
+  watchLostHistory(): Observable<Record<string, Record<string, string>>> {
+    return this.repo.watchLostHistory();
+  }
+
   removeLostTask(taskId: string): Observable<void> {
     return this.repo.removeLost(taskId);
   }

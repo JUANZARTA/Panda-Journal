@@ -22,6 +22,8 @@ export abstract class TaskRepository {
 
   // "Tareas perdidas": tareas que tenían fecha y el día pasó sin completarse.
   abstract watchLost(): Observable<Task[]>;
+  /** Historial permanente de tareas que se perdieron: {fechaOriginal: {taskId: nombre}}. No se borra al reprogramar. */
+  abstract watchLostHistory(): Observable<Record<string, Record<string, string>>>;
   abstract updateLost(taskId: string, changes: Partial<TaskInput>): Observable<void>;
   abstract removeLost(taskId: string): Observable<void>;
   /** Reasigna una tarea perdida a un día nuevo — vuelve a vivir bajo tareas/{fecha}. */
