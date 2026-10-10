@@ -6,6 +6,7 @@
 // proyecto lo exijan — auditarlas es un paso aparte, no alcanza con este cambio).
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { Router } from '@angular/router';
 import { Observable, from, of, forkJoin, throwError } from 'rxjs';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 
@@ -41,6 +42,7 @@ export interface Notificacion {
 export class AuthService {
   private auth = inject(Auth);
   private database = inject(Database);
+  private router = inject(Router);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   // ==================
@@ -111,7 +113,7 @@ export class AuthService {
       if (!user && hasLocalSession) {
         // Sesión en localStorage pero no en Firebase → logout automático
         this.logout();
-        window.location.href = `${document.baseURI}login`;
+        this.router.navigate(['/login']);
       }
     });
 
