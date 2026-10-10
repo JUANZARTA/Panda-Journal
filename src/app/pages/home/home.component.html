@@ -3,27 +3,28 @@
   <div class="flex flex-col items-center gap-3 relative w-full">
     <!-- Progreso circular (esquina superior derecha en desktop) -->
     <div class="absolute top-0 right-0 hidden md:flex">
-      <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-        <!-- Círculo de fondo -->
-        <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(0, 0, 0, 0.1)" stroke-width="6"/>
-        <!-- Círculo de progreso -->
-        <circle
-          cx="40"
-          cy="40"
-          r="32"
-          fill="none"
-          stroke="#4a9d6f"
-          stroke-width="6"
-          stroke-dasharray="200.89 200.89"
-          [attr.stroke-dashoffset]="200.89 - (progresoDia() / 100) * 200.89"
-          stroke-linecap="round"
-          style="transform: rotate(-90deg); transform-origin: 40px 40px; transition: stroke-dashoffset 300ms ease"
-        />
-        <!-- Texto del porcentaje -->
-        <text x="40" y="48" text-anchor="middle" class="text-center font-semibold" style="font-size: 16px; font-weight: bold; fill: currentColor;">
-          {{ progresoDia() }}%
-        </text>
-      </svg>
+      <div class="bg-paper-raised rounded-lg shadow-page p-4 w-32 h-32 flex items-center justify-center">
+        <svg class="w-24 h-24" viewBox="0 0 100 100" style="overflow: visible;">
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#d0ccc7" stroke-width="11" />
+          <circle
+            cx="50"
+            cy="50"
+            r="35"
+            fill="none"
+            stroke="#6BCB77"
+            stroke-width="11"
+            stroke-dasharray="219.9"
+            [style.stroke-dashoffset.px]="219.9 * (1 - progresoDia() / 100)"
+            stroke-linecap="round"
+            transform="rotate(-90 50 50)"
+            style="transition: stroke-dashoffset 300ms ease"
+          />
+          <circle cx="50" cy="50" r="20" fill="white" />
+          <text x="50" y="57" text-anchor="middle" fill="#1a1a1a" font-size="20" font-weight="bold" font-family="system-ui">
+            {{ progresoDia() }}%
+          </text>
+        </svg>
+      </div>
     </div>
 
     <!-- Título centrado con flechas de navegación -->
@@ -115,6 +116,9 @@
     >
       <!-- Página izquierda -->
       <div class="notebook-page px-3 md:px-8 py-4 md:py-10">
+      <div class="md:hidden">
+        <ng-container *ngTemplateOutlet="notaBtn"></ng-container>
+      </div>
       <ng-container *ngIf="categorias().length > 0; else sinCategorias">
         <section
           *ngFor="let categoriaId of categoriasPartidas().izquierda"
@@ -258,6 +262,9 @@
 
       <!-- Página derecha -->
       <div class="notebook-page px-3 md:px-8 py-4 md:py-10">
+      <div class="hidden md:block">
+        <ng-container *ngTemplateOutlet="notaBtn"></ng-container>
+      </div>
       <ng-container *ngIf="categoriasPartidas().derecha.length > 0">
         <section
           *ngFor="let categoriaId of categoriasPartidas().derecha"
@@ -377,6 +384,83 @@
       </ng-container>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Post-it "Nota del día" (se renderiza en la primera página en mobile y en la derecha en desktop) -->
+<ng-template #notaBtn>
+  <button
+    type="button"
+    (click)="abrirNota()"
+    class="absolute top-1 right-2 z-10 w-14 h-[70px] md:w-[76px] md:h-[94px] rotate-3 drop-shadow-md transition hover:rotate-0 hover:-translate-y-0.5"
+    [title]="nota() ? 'Ver o editar la nota del día' : 'Agregar nota del día'"
+  >
+    <svg viewBox="0 0 80 100" class="absolute inset-0 w-full h-full" aria-hidden="true">
+      <path
+        d="M20,3 H77 V97 H3 V20 Z"
+        stroke-width="3"
+        stroke-linejoin="round"
+        [ngClass]="nota() ? 'fill-accent-soft stroke-accent' : 'fill-paper-raised stroke-ink-faint'"
+      />
+      <path
+        d="M20,3 V20 H3 Z"
+        stroke-width="3"
+        stroke-linejoin="round"
+        [ngClass]="nota() ? 'fill-accent stroke-accent' : 'fill-paper-line stroke-ink-faint'"
+      />
+      <g *ngIf="!nota()" class="stroke-ink-faint" stroke-width="3" stroke-linecap="round">
+        <line x1="22" y1="40" x2="62" y2="40" />
+        <line x1="18" y1="55" x2="62" y2="55" />
+        <line x1="18" y1="70" x2="48" y2="70" />
+      </g>
+    </svg>
+
+    <span
+      *ngIf="nota(); else sinNota"
+      class="absolute left-[12%] right-[10%] top-[24%] bottom-[8%] text-left text-[8px] md:text-[10px] leading-tight text-ink overflow-hidden line-clamp-5 break-words"
+    >{{ nota()!.texto }}</span>
+    <ng-template #sinNota>
+      <span class="absolute inset-x-0 bottom-[10%] text-[8px] md:text-[10px] font-semibold text-ink-soft">+ nota</span>
+    </ng-template>
+  </button>
+</ng-template>
+
+<!-- Modal Nota del día -->
+<div
+  *ngIf="notaVisible()"
+  class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+  (click)="cerrarNota()"
+  (keydown.escape)="cerrarNota()"
+>
+  <div
+    class="notebook-page border border-paper-line rounded-lg shadow-page max-w-md w-full p-5 md:p-6 !min-h-0"
+    (click)="$event.stopPropagation()"
+  >
+    <button
+      type="button"
+      (click)="cerrarNota()"
+      class="absolute top-3 right-3 p-1 rounded-full hover:bg-accent-soft/60 transition"
+      aria-label="Cerrar"
+    >
+      <span class="material-icons text-ink">close</span>
+    </button>
+    <h3 class="font-hand text-2xl text-ink pr-8">Nota del día</h3>
+    <p class="text-xs text-ink-faint mb-3">{{ fechaLegible() }}</p>
+    <textarea
+      #notaInput
+      autofocus
+      rows="8"
+      [(ngModel)]="notaTexto"
+      placeholder="Escribí algo para este día…"
+      class="w-full px-3 py-2 border border-paper-line rounded bg-paper text-ink placeholder:text-ink-faint focus:outline-none focus:border-accent resize-none"
+    ></textarea>
+    <button
+      type="button"
+      (click)="guardarNota()"
+      class="mt-4 w-full px-4 py-2 bg-accent text-white dark:text-black rounded font-semibold hover:opacity-90 transition"
+    >
+      Guardar
+    </button>
   </div>
 </div>
 

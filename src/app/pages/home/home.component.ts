@@ -1,9 +1,11 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { switchMap } from 'rxjs';
 import { format } from 'date-fns';
+import { NoteRepository, DayNote } from '../../data-access/repositories/note.repository';
 import { es } from 'date-fns/locale';
 
 import { TaskTypeService } from '../../services/taskType.service';
@@ -27,6 +29,7 @@ export default class HomeComponent {
   private taskService = inject(TaskService);
   private dateService = inject(DateService);
   private authService = inject(AuthService);
+  private noteRepo = inject(NoteRepository);
   uiState = inject(UiStateService);
 
   categorias = toSignal(this.taskTypeService.getAllTaskTypes(), { initialValue: [] as TaskType[] });
@@ -37,6 +40,14 @@ export default class HomeComponent {
   fechaLegible = computed(() =>
     capitalize(format(parseLocalDate(this.selectedDate()), "EEEE d 'de' MMMM", { locale: es }))
   );
+
+  nota = toSignal(
+    this.dateService.selectedDate$.pipe(switchMap((fecha) => this.noteRepo.watchByDate(fecha))),
+    { initialValue: null as DayNote | null }
+  );
+  notaVisible = signal(false);
+  notaTexto = '';
+  private notaInput = viewChild<ElementRef<HTMLTextAreaElement>>('notaInput');
 
   /** 'page-turn-next' | 'page-turn-prev' | '' — se limpia solo al terminar la animación (ver (animationend) en el template). */
   pageAnimClass = signal('');
@@ -274,6 +285,21 @@ export default class HomeComponent {
   cerrarSubtareasModal(): void {
     this.subtasksModalVisible.set(false);
     this.selectedTaskForSubtasks.set(undefined);
+  }
+
+  abrirNota(): void {
+    this.notaTexto = this.nota()?.texto ?? '';
+    this.notaVisible.set(true);
+    setTimeout(() => this.notaInput()?.nativeElement.focus());
+  }
+
+  cerrarNota(): void {
+    this.notaVisible.set(false);
+  }
+
+  guardarNota(): void {
+    this.noteRepo.save(this.selectedDate(), this.notaTexto).subscribe();
+    this.cerrarNota();
   }
 
 }
