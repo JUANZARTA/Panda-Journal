@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -52,29 +52,7 @@ export class SidebarComponent implements OnInit {
   notifications: any[] = [];
   unreadCount = 0;
 
-  biometricSupported = signal(false);
-  biometricBusy = signal(false);
-
-  async toggleBiometric(): Promise<void> {
-    if (this.biometricBusy()) return;
-    if (this.biometric.enabled()) {
-      this.biometric.disable();
-      return;
-    }
-    const uid = this.authService.getUser()?.id;
-    if (!uid) return;
-    this.biometricBusy.set(true);
-    try {
-      await this.biometric.enable(uid);
-    } catch {
-      // el mensaje queda en biometric.error()
-    } finally {
-      this.biometricBusy.set(false);
-    }
-  }
-
   ngOnInit(): void {
-    this.biometric.isSupported().then((ok) => this.biometricSupported.set(ok));
     // Notificaciones desactivadas: estaban generando avisos incorrectos (ej. en
     // cuentas recién creadas, sin tareas todavía). Queda el código de abajo por
     // si se retoma más adelante, pero no se llama a nada acá.

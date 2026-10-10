@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 import { RecurringTaskService } from '../../services/recurring-task.service';
@@ -10,7 +11,7 @@ import { RecurringTask } from '../../models/recurring-task.model';
 @Component({
   selector: 'app-recurring-tasks',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './recurring-tasks.component.html',
   styleUrls: ['./recurring-tasks.component.css'],
 })

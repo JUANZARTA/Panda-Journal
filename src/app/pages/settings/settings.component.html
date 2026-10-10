@@ -1,0 +1,108 @@
+<div class="max-w-2xl lg:max-w-4xl mx-auto px-5 py-8 md:py-12">
+  <h1 class="font-hand text-4xl text-ink mb-1">Configuración</h1>
+  <p class="text-sm text-ink-soft mb-8">Ajustá la app a tu gusto.</p>
+
+  <!-- Apariencia -->
+  <h2 class="text-xs font-semibold uppercase tracking-wide text-ink-faint mb-2">Apariencia</h2>
+  <div class="notebook-page rounded-lg shadow-page px-5 py-2 mb-8">
+    <button
+      (click)="uiState.toggleDarkMode()"
+      class="w-full flex items-center gap-3 py-2.5 border-b border-paper-line text-left"
+    >
+      <span class="material-icons text-base text-ink-soft">{{ uiState.isDarkMode() ? 'dark_mode' : 'light_mode' }}</span>
+      <span class="flex-1 text-ink">Modo oscuro</span>
+      <span class="toggle" [class.on]="uiState.isDarkMode()"></span>
+    </button>
+
+    <div class="flex items-center gap-3 py-2.5">
+      <span class="material-icons text-base text-accent">palette</span>
+      <span class="flex-1 text-ink">Color</span>
+      <div class="flex gap-2">
+        <button
+          *ngFor="let t of themes"
+          (click)="uiState.accentTheme.set(t.id)"
+          class="w-6 h-6 rounded-full border-2 transition"
+          [style.background-color]="t.color"
+          [class.border-ink]="uiState.accentTheme() === t.id"
+          [class.border-transparent]="uiState.accentTheme() !== t.id"
+          [title]="t.nombre"
+        ></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Seguridad (solo celular) -->
+  <ng-container *ngIf="biometricSupported()">
+    <div class="md:hidden">
+      <h2 class="text-xs font-semibold uppercase tracking-wide text-ink-faint mb-2">Seguridad</h2>
+      <div class="notebook-page rounded-lg shadow-page px-5 py-2 mb-8">
+        <button
+          (click)="toggleBiometric()"
+          [disabled]="biometricBusy()"
+          class="w-full flex items-center gap-3 py-2.5 text-left disabled:opacity-50"
+        >
+          <span class="material-icons text-base text-ink-soft">fingerprint</span>
+          <span class="flex-1 text-ink">Ingreso con huella</span>
+          <span class="toggle" [class.on]="biometric.enabled()"></span>
+        </button>
+        <p *ngIf="biometric.error() && !biometric.enabled()" class="text-xs text-overdue pb-2">{{ biometric.error() }}</p>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Tareas -->
+  <h2 class="text-xs font-semibold uppercase tracking-wide text-ink-faint mb-2">Tareas</h2>
+  <div class="notebook-page rounded-lg shadow-page px-5 py-2 mb-8">
+    <a routerLink="/app/tareas-recurrentes" class="flex items-center gap-3 py-2.5">
+      <span class="material-icons text-base text-ink-soft">repeat</span>
+      <span class="flex-1 text-ink">Tareas recurrentes</span>
+      <span class="material-icons text-base text-ink-faint">chevron_right</span>
+    </a>
+  </div>
+
+  <!-- Notas de versión -->
+  <h2 class="text-xs font-semibold uppercase tracking-wide text-ink-faint mb-2">Notas de versión</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+    <button
+      *ngFor="let entry of changelog"
+      (click)="notaAbierta.set(entry)"
+      class="bg-paper-raised border rounded-xl px-4 py-3 text-left hover:border-accent hover:shadow-page transition"
+      [class.border-accent]="entry.version === version"
+      [class.border-paper-line]="entry.version !== version"
+    >
+      <p class="text-ink font-semibold">v{{ entry.version }}</p>
+      <p class="text-xs text-ink-faint mt-0.5">{{ entry.fecha }}</p>
+      <p *ngIf="entry.version === version" class="text-xs font-semibold text-accent mt-1">Actual</p>
+    </button>
+  </div>
+</div>
+
+<!-- Modal de notas -->
+<div
+  *ngIf="notaAbierta() as entry"
+  class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+  (click)="notaAbierta.set(null)"
+>
+  <div
+    class="notebook-page border border-paper-line rounded-lg shadow-page w-full max-w-md max-h-[80vh] overflow-y-auto p-6 relative"
+    (click)="$event.stopPropagation()"
+  >
+    <button
+      (click)="notaAbierta.set(null)"
+      class="absolute top-3 right-3 p-1 rounded hover:bg-accent-soft/60 transition"
+      title="Cerrar"
+    >
+      <span class="material-icons text-ink-soft">close</span>
+    </button>
+    <p class="font-hand text-3xl text-ink">v{{ entry.version }}</p>
+    <p class="text-xs text-ink-faint mb-4">
+      {{ entry.fecha }}
+      <span *ngIf="entry.version === version" class="ml-2 font-semibold text-accent">Actual</span>
+    </p>
+    <ul class="space-y-1.5">
+      <li *ngFor="let c of entry.cambios" class="text-sm text-ink-soft flex gap-2">
+        <span class="text-accent">•</span><span>{{ c }}</span>
+      </li>
+    </ul>
+  </div>
+</div>

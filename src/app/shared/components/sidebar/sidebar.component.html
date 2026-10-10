@@ -99,16 +99,6 @@
       <span class="material-icons text-lg flex-shrink-0">schedule</span>
       <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">Itinerario</span>
     </a>
-    <a
-      routerLink="/app/tareas-recurrentes"
-      routerLinkActive="bg-accent-soft text-ink"
-      (click)="navigate('/app/tareas-recurrentes')"
-      class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
-      [title]="uiState.isSidebarCollapsed() ? 'Tareas recurrentes' : ''"
-    >
-      <span class="material-icons text-lg flex-shrink-0">settings</span>
-      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">Tareas recurrentes</span>
-    </a>
   </nav>
 
   <div class="flex-1"></div>
@@ -143,49 +133,18 @@
     </button>
   </div>
 
-  <!-- Modo oscuro -->
+  <!-- Configuración -->
   <div class="px-3 mt-1">
-    <button
-      (click)="uiState.toggleDarkMode()"
-      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition"
-      [title]="uiState.isSidebarCollapsed() ? (uiState.isDarkMode() ? 'Modo claro' : 'Modo oscuro') : ''"
+    <a
+      routerLink="/app/configuracion"
+      routerLinkActive="bg-accent-soft text-ink"
+      (click)="navigate('/app/configuracion')"
+      class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition cursor-pointer"
+      [title]="uiState.isSidebarCollapsed() ? 'Configuración' : ''"
     >
-      <span class="material-icons text-lg flex-shrink-0">{{ uiState.isDarkMode() ? 'light_mode' : 'dark_mode' }}</span>
-      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">{{ uiState.isDarkMode() ? 'Modo claro' : 'Modo oscuro' }}</span>
-    </button>
-  </div>
-
-  <!-- Color de acento -->
-  <div class="px-3 mt-1">
-    <button
-      (click)="uiState.cycleAccentTheme()"
-      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition"
-      [title]="'Color: ' + uiState.accentThemeInfo().nombre + ' (tocá para cambiar)'"
-    >
-      <span class="material-icons text-lg flex-shrink-0 text-accent">palette</span>
-      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()" class="flex items-center gap-2">
-        Color: {{ uiState.accentThemeInfo().nombre }}
-        <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
-      </span>
-    </button>
-  </div>
-
-  <!-- Huella -->
-  <div *ngIf="biometricSupported()" class="px-3 mt-1 md:hidden">
-    <button
-      (click)="toggleBiometric()"
-      [disabled]="biometricBusy()"
-      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition disabled:opacity-40"
-      [title]="uiState.isSidebarCollapsed() ? (biometric.enabled() ? 'Desactivar huella' : 'Activar huella') : ''"
-    >
-      <span class="material-icons text-lg flex-shrink-0">fingerprint</span>
-      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">{{ biometric.enabled() ? 'Desactivar huella' : 'Activar huella' }}</span>
-    </button>
-    <p
-      *ngIf="biometric.error() && !biometric.enabled()"
-      class="px-3 mt-1 text-xs text-overdue"
-      [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()"
-    >{{ biometric.error() }}</p>
+      <span class="material-icons text-lg flex-shrink-0">settings</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()">Configuración</span>
+    </a>
   </div>
 
   <!-- Salir -->

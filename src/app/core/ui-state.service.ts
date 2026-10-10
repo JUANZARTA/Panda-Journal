@@ -42,15 +42,6 @@ export class UiStateService {
     this.isDarkMode.update((v) => !v);
   }
 
-  cycleAccentTheme(): void {
-    const i = ACCENT_THEMES.findIndex((t) => t.id === this.accentTheme());
-    this.accentTheme.set(ACCENT_THEMES[(i + 1) % ACCENT_THEMES.length].id);
-  }
-
-  accentThemeInfo() {
-    return ACCENT_THEMES.find((t) => t.id === this.accentTheme()) ?? ACCENT_THEMES[0];
-  }
-
   openDrawer(): void {
     this.isDrawerOpen.set(true);
   }
