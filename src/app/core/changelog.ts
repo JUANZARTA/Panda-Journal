@@ -7,6 +7,27 @@ export interface ChangelogEntry {
 /** Notas de versión, de la más nueva a la más vieja. Solo cambios notorios para el usuario. */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '2.3.0',
+    fecha: '10/10/2026',
+    cambios: [
+      'Trabajo sin conexión: si se corta internet, seguís usando la app y tus cambios se guardan al volver la conexión.',
+      'Aviso de "Sin conexión" mientras no hay internet.',
+      'Buscador en Todas las tareas, sin importar mayúsculas ni tildes.',
+      'Filtros de Todas las tareas reorganizados por origen, estado, categorías y fechas.',
+    ],
+  },
+  {
+    version: '2.2.9',
+    fecha: '10/10/2026',
+    cambios: [
+      'Tareas recurrentes por día de la semana: elegí en qué días se crean.',
+      'Nota del día: un post-it en el cuaderno para escribir cómo te fue.',
+      'Estadísticas: racha actual, mejor racha, resumen semanal y gráfico de tareas hechas por día.',
+      'Historial de tareas perdidas: el registro se conserva aunque las reprogrames.',
+      'Las subtareas ya no se pierden al mover una tarea a otro día o al reprogramar una perdida.',
+    ],
+  },
+  {
     version: '2.2.8',
     fecha: '10/10/2026',
     cambios: [
