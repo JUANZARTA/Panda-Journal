@@ -13,9 +13,12 @@ export interface Task {
   estado: TaskEstado;
   /** Solo presente en tareas que viven en la bandeja "Tareas perdidas" — de qué día era. */
   fechaOriginal?: string;
+  /** Derivados al leer (no se persisten): conteo de subtareas de la tarea. */
+  subtareasTotal?: number;
+  subtareasHechas?: number;
 }
 
-export type TaskInput = Omit<Task, 'id'>;
+export type TaskInput = Omit<Task, 'id' | 'subtareasTotal' | 'subtareasHechas'>;
 
 /** Una tarea del cuaderno (con fecha) tal como se ve en "Todas las tareas". */
 export type TaskConFecha = Task & { fecha: string };

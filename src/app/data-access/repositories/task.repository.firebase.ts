@@ -26,6 +26,7 @@ interface RawTask {
   categoriaId: string;
   estado: Task['estado'];
   fechaOriginal?: string;
+  subtasks?: Record<string, { estado?: Task['estado'] }>;
 }
 
 /** Cuántos días hacia atrás mira migratePastDue — evita escanear años de historial. */
@@ -86,7 +87,7 @@ export class FirebaseTaskRepository extends TaskRepository {
     if (!uid) throw new Error('No hay usuario activo');
     if (fechaActual === fechaNueva) return of(undefined);
 
-    const { id, ...data } = task;
+    const { id, subtareasTotal, subtareasHechas, ...data } = task;
     const updates: Record<string, unknown> = {
       [`tareas/${fechaActual}/${id}`]: null,
       [`tareas/${fechaNueva}/${id}`]: stripUndefined(data),
@@ -303,6 +304,11 @@ function flattenTasks(tareas: Record<string, RawTask> | null): Task[] {
     };
     if (tarea.nota !== undefined) task.nota = tarea.nota;
     if (tarea.fechaOriginal !== undefined) task.fechaOriginal = tarea.fechaOriginal;
+    if (tarea.subtasks) {
+      const subs = Object.values(tarea.subtasks);
+      task.subtareasTotal = subs.length;
+      task.subtareasHechas = subs.filter((s) => s?.estado === 'realizado').length;
+    }
     return task;
   });
 }

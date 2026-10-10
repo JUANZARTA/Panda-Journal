@@ -146,6 +146,13 @@
                 [class.text-ink]="task.estado !== 'realizado'"
               >
                 {{ task.nombre }}
+                <button
+                  *ngIf="task.subtareasTotal"
+                  (click)="$event.stopPropagation(); abrirSubtareasModal(task)"
+                  class="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[11px] font-semibold leading-none align-middle text-white dark:text-black hover:opacity-80 transition"
+                  [ngClass]="task.subtareasHechas === task.subtareasTotal ? 'bg-done' : 'bg-accent'"
+                  [title]="task.subtareasHechas + ' de ' + task.subtareasTotal + ' subtareas completas'"
+                >{{ task.subtareasTotal }}</button>
               </span>
               <div class="flex gap-1 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition">
                 <button
@@ -277,6 +284,13 @@
                 [class.text-ink]="task.estado !== 'realizado'"
               >
                 {{ task.nombre }}
+                <button
+                  *ngIf="task.subtareasTotal"
+                  (click)="$event.stopPropagation(); abrirSubtareasModal(task)"
+                  class="ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[11px] font-semibold leading-none align-middle text-white dark:text-black hover:opacity-80 transition"
+                  [ngClass]="task.subtareasHechas === task.subtareasTotal ? 'bg-done' : 'bg-accent'"
+                  [title]="task.subtareasHechas + ' de ' + task.subtareasTotal + ' subtareas completas'"
+                >{{ task.subtareasTotal }}</button>
               </span>
               <div class="flex gap-1 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition">
                 <button
