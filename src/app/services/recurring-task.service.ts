@@ -16,11 +16,12 @@ export class RecurringTaskService {
     return this.recurringRepo.getAll();
   }
 
-  create(nombre: string, categoriaId: string): Observable<RecurringTask> {
+  create(nombre: string, categoriaId: string, dias?: number[]): Observable<RecurringTask> {
     return this.recurringRepo.create({
       nombre,
       categoriaId,
       activo: true,
+      ...(dias?.length ? { dias } : {}),
     });
   }
 
@@ -30,6 +31,10 @@ export class RecurringTaskService {
 
   updateCategoria(id: string, categoriaId: string): Observable<void> {
     return this.recurringRepo.update(id, { categoriaId });
+  }
+
+  updateDias(id: string, dias: number[] | null): Observable<void> {
+    return this.recurringRepo.updateDias(id, dias);
   }
 
   toggleActive(id: string, activo: boolean): Observable<void> {
@@ -59,8 +64,11 @@ export class RecurringTaskService {
       // localStorage no disponible (SSR) — continuar
     }
 
+    const todayDow = new Date().getDay();
+
     return this.recurringRepo.getActive().pipe(
       take(1),
+      map((all) => all.filter((t) => !t.dias?.length || t.dias.includes(todayDow))),
       switchMap((recurringTasks) => {
         if (recurringTasks.length === 0) return from([undefined]);
 

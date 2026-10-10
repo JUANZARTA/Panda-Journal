@@ -4,4 +4,5 @@ export interface RecurringTask {
   categoriaId: string;
   activo: boolean;
   createdAt: string;
+  dias?: number[];
 }

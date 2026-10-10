@@ -12,6 +12,7 @@ interface RawRecurringTask {
   categoriaId: string;
   activo: boolean;
   createdAt: string;
+  dias?: number[];
 }
 
 @Injectable()
@@ -39,9 +40,12 @@ export class FirebaseRecurringTaskRepository extends RecurringTaskRepository {
     if (!path) throw new Error('No hay usuario activo');
 
     const newTask: RawRecurringTask = {
-      ...task,
+      nombre: task.nombre,
+      categoriaId: task.categoriaId,
+      activo: task.activo,
       createdAt: new Date().toISOString(),
     };
+    if (task.dias?.length) newTask.dias = task.dias;
 
     return this.pushRecurringTask(path, newTask).pipe(
       map((id) => ({ id, ...newTask }))
@@ -52,8 +56,15 @@ export class FirebaseRecurringTaskRepository extends RecurringTaskRepository {
     const path = this.recurringTasksPath();
     if (!path) throw new Error('No hay usuario activo');
 
-    const { createdAt, id: _, ...cleanUpdates } = updates as any;
+    const { createdAt, id: _, ...rest } = updates as any;
+    const cleanUpdates = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined));
     return from(dbUpdate(ref(this.db, `${path}/${id}`), cleanUpdates));
+  }
+
+  updateDias(id: string, dias: number[] | null): Observable<void> {
+    const path = this.recurringTasksPath();
+    if (!path) throw new Error('No hay usuario activo');
+    return from(dbUpdate(ref(this.db, `${path}/${id}`), { dias: dias?.length ? dias : null }));
   }
 
   delete(id: string): Observable<void> {
@@ -82,8 +93,8 @@ export class FirebaseRecurringTaskRepository extends RecurringTaskRepository {
 
 function flattenRecurringTasks(tasks: Record<string, RawRecurringTask> | null): RecurringTask[] {
   if (!tasks) return [];
-  return Object.entries(tasks).map(([id, task]) => ({
-    id,
-    ...task,
-  }));
+  return Object.entries(tasks).map(([id, task]) => {
+    const dias = task.dias ? Object.values(task.dias) : undefined;
+    return { id, ...task, dias };
+  });
 }

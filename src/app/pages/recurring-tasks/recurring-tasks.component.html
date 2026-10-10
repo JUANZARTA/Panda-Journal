@@ -34,6 +34,18 @@
         {{ creando() ? 'Agregando...' : 'Agregar' }}
       </button>
     </div>
+    <div class="flex flex-wrap gap-1.5 mt-3">
+      <button
+        *ngFor="let d of diasSemana"
+        type="button"
+        (click)="toggleDia(nuevoDias, d.valor)"
+        [attr.aria-pressed]="nuevoDias().includes(d.valor)"
+        class="w-8 h-8 text-xs font-semibold rounded-full transition"
+        [ngClass]="nuevoDias().includes(d.valor) ? 'bg-accent text-white dark:text-black' : 'border border-paper-line text-ink-soft'"
+      >
+        {{ d.letra }}
+      </button>
+    </div>
   </div>
 
   <div class="notebook-page rounded-lg shadow-page px-5 py-4">
@@ -46,6 +58,7 @@
         <div class="flex-1 min-w-0">
           <p class="text-ink truncate">{{ task.nombre }}</p>
           <p class="text-xs text-ink-faint truncate">{{ getNombreCategoria(task.categoriaId) }}</p>
+          <p class="text-xs text-ink-faint truncate">{{ resumenDias(task.dias) }}</p>
         </div>
 
         <label class="flex items-center cursor-pointer" [title]="task.activo ? 'Desactivar' : 'Activar'">
@@ -61,13 +74,27 @@
       </ng-container>
 
       <ng-template #editandoTpl>
+        <div class="flex-1 min-w-0 flex flex-col gap-2">
         <input
           type="text"
           [(ngModel)]="editNombre"
           (keyup.enter)="guardarEdicion(task.id)"
           (keyup.escape)="cancelarEdicion()"
-          class="flex-1 min-w-0 bg-transparent border-b border-accent text-ink focus:outline-none py-1"
+          class="min-w-0 bg-transparent border-b border-accent text-ink focus:outline-none py-1"
         />
+        <div class="flex flex-wrap gap-1.5 ">
+      <button
+        *ngFor="let d of diasSemana"
+        type="button"
+        (click)="toggleDia(editDias, d.valor)"
+        [attr.aria-pressed]="editDias().includes(d.valor)"
+        class="w-7 h-7 text-xs font-semibold rounded-full transition"
+        [ngClass]="editDias().includes(d.valor) ? 'bg-accent text-white dark:text-black' : 'border border-paper-line text-ink-soft'"
+      >
+        {{ d.letra }}
+      </button>
+    </div>
+        </div>
         <select
           [(ngModel)]="editCategoria"
           class="bg-transparent border-b border-paper-line focus:border-accent text-sm text-ink-soft focus:outline-none py-1"
