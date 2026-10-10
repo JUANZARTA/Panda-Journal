@@ -37,6 +37,35 @@
   --overdue: #e0685c;
 }
 
+/* Temas de acento: solo pisan --accent / --accent-soft, el papel no cambia. */
+:root.theme-blue {
+  --accent: #1f6feb;
+  --accent-soft: #d6e4fb;
+}
+/* Papel teñido solo en modo claro — el modo oscuro queda en gris neutro. */
+:root.theme-blue:not(.dark) {
+  --paper-bg: #eef2f8;
+  --paper-bg-raised: #f8fafd;
+  --paper-line: #d5deeb;
+}
+:root.dark.theme-blue {
+  --accent: #4c9aff;
+  --accent-soft: #1f2a3a;
+}
+:root.theme-rose {
+  --accent: #b5338a;
+  --accent-soft: #f3d6e8;
+}
+:root.theme-rose:not(.dark) {
+  --paper-bg: #f8eef3;
+  --paper-bg-raised: #fdf8fa;
+  --paper-line: #ecd5e1;
+}
+:root.dark.theme-rose {
+  --accent: #e879b9;
+  --accent-soft: #3a2433;
+}
+
 html, body {
   height: 100%;
 }

@@ -155,6 +155,21 @@
     </button>
   </div>
 
+  <!-- Color de acento -->
+  <div class="px-3 mt-1">
+    <button
+      (click)="uiState.cycleAccentTheme()"
+      class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:bg-accent-soft/60 transition"
+      [title]="'Color: ' + uiState.accentThemeInfo().nombre + ' (tocá para cambiar)'"
+    >
+      <span class="material-icons text-lg flex-shrink-0 text-accent">palette</span>
+      <span [class.hidden]="uiState.isSidebarCollapsed() && !uiState.isDrawerOpen()" class="flex items-center gap-2">
+        Color: {{ uiState.accentThemeInfo().nombre }}
+        <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
+      </span>
+    </button>
+  </div>
+
   <!-- Salir -->
   <div class="px-3 pb-4 mt-1">
     <button
