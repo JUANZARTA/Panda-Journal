@@ -123,8 +123,15 @@
         <section
           *ngFor="let categoriaId of categoriasPartidas().izquierda"
           class="mb-8 last:mb-0"
+          [ngClass]="{ 'opacity-60': !editable(categoriaId) }"
         >
-          <h2 class="font-hand text-2xl text-accent mb-3">{{ nombreCategoria(categoriaId) }}</h2>
+          <h2 class="font-hand text-2xl text-accent mb-3">
+            {{ nombreCategoria(categoriaId) }}
+            <span *ngIf="!editable(categoriaId)" class="ml-2 inline-flex items-center gap-1 font-sans text-xs text-ink-faint align-middle">
+              <span class="material-icons" style="font-size: 14px">visibility_off</span>
+              Desactivada
+            </span>
+          </h2>
 
           <div
             *ngFor="let task of tareasDe(categoriaId); trackBy: trackByTaskId"
@@ -132,7 +139,8 @@
           >
             <button
               (click)="toggleTask(task)"
-              class="relative overflow-hidden mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
+              [disabled]="!editable(categoriaId)"
+              class="relative overflow-hidden mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition disabled:cursor-not-allowed"
               [ngClass]="task.estado === 'realizado' ? 'bg-done border-done' : 'border-ink-faint'"
             >
               <span
@@ -148,7 +156,8 @@
             <ng-container *ngIf="editandoTaskId !== task.id; else editandoTask">
               <span
                 (click)="empezarEdicionTask(task)"
-                class="flex-1 cursor-text break-words"
+                class="flex-1 break-words"
+                [ngClass]="editable(categoriaId) ? 'cursor-text' : 'cursor-default'"
                 [class.line-through]="task.estado === 'realizado'"
                 [class.text-ink-faint]="task.estado === 'realizado'"
                 [class.text-ink]="task.estado !== 'realizado'"
@@ -162,44 +171,46 @@
                   [title]="task.subtareasHechas + ' de ' + task.subtareasTotal + ' subtareas completas'"
                 >{{ task.subtareasTotal }}</button>
               </span>
-              <div class="hidden md:flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition">
+              <ng-container *ngIf="editable(categoriaId)">
+                <div class="hidden md:flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition">
+                  <button
+                    (click)="moverTareaArriba(task, categoriaId)"
+                    [disabled]="!puedeSubir(task, categoriaId)"
+                    class="p-1 shrink-0 disabled:opacity-30"
+                    title="Mover arriba"
+                  >
+                    <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_upward</span>
+                  </button>
+                  <button
+                    (click)="moverTareaAbajo(task, categoriaId)"
+                    [disabled]="!puedeJajar(task, categoriaId)"
+                    class="p-1 shrink-0 disabled:opacity-30"
+                    title="Mover abajo"
+                  >
+                    <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_downward</span>
+                  </button>
+                </div>
                 <button
-                  (click)="moverTareaArriba(task, categoriaId)"
-                  [disabled]="!puedeSubir(task, categoriaId)"
-                  class="p-1 shrink-0 disabled:opacity-30"
-                  title="Mover arriba"
+                  (click)="abrirMoverTarea(task)"
+                  class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
+                  title="Mover a otro día"
                 >
-                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_upward</span>
+                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
                 </button>
                 <button
-                  (click)="moverTareaAbajo(task, categoriaId)"
-                  [disabled]="!puedeJajar(task, categoriaId)"
-                  class="p-1 shrink-0 disabled:opacity-30"
-                  title="Mover abajo"
+                  (click)="abrirSubtareasModal(task)"
+                  class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
+                  title="Subtareas"
                 >
-                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_downward</span>
+                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">checklist</span>
                 </button>
-              </div>
-              <button
-                (click)="abrirMoverTarea(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
-                title="Mover a otro día"
-              >
-                <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
-              </button>
-              <button
-                (click)="abrirSubtareasModal(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
-                title="Subtareas"
-              >
-                <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">checklist</span>
-              </button>
-              <button
-                (click)="eliminarTarea(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
-              >
-                <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
-              </button>
+                <button
+                  (click)="eliminarTarea(task)"
+                  class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
+                >
+                  <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
+                </button>
+              </ng-container>
             </ng-container>
 
             <ng-template #editandoTask>
@@ -214,8 +225,8 @@
             </ng-template>
           </div>
 
-          <!-- Alta rápida -->
-          <div class="flex items-center gap-3 py-1.5 mt-1">
+          <!-- Alta rápida (no disponible si la categoría está desactivada) -->
+          <div *ngIf="editable(categoriaId)" class="flex items-center gap-3 py-1.5 mt-1">
             <span class="w-5 h-5 flex items-center justify-center shrink-0">
               <span class="material-icons text-ink-faint" style="font-size: 16px">add</span>
             </span>
@@ -269,8 +280,15 @@
         <section
           *ngFor="let categoriaId of categoriasPartidas().derecha"
           class="mb-8 last:mb-0"
+          [ngClass]="{ 'opacity-60': !editable(categoriaId) }"
         >
-          <h2 class="font-hand text-2xl text-accent mb-3">{{ nombreCategoria(categoriaId) }}</h2>
+          <h2 class="font-hand text-2xl text-accent mb-3">
+            {{ nombreCategoria(categoriaId) }}
+            <span *ngIf="!editable(categoriaId)" class="ml-2 inline-flex items-center gap-1 font-sans text-xs text-ink-faint align-middle">
+              <span class="material-icons" style="font-size: 14px">visibility_off</span>
+              Desactivada
+            </span>
+          </h2>
 
           <div
             *ngFor="let task of tareasDe(categoriaId); trackBy: trackByTaskId"
@@ -278,7 +296,8 @@
           >
             <button
               (click)="toggleTask(task)"
-              class="relative overflow-hidden mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
+              [disabled]="!editable(categoriaId)"
+              class="relative overflow-hidden mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition disabled:cursor-not-allowed"
               [ngClass]="task.estado === 'realizado' ? 'bg-done border-done' : 'border-ink-faint'"
             >
               <span
@@ -294,7 +313,8 @@
             <ng-container *ngIf="editandoTaskId !== task.id; else editandoTask2">
               <span
                 (click)="empezarEdicionTask(task)"
-                class="flex-1 cursor-text break-words"
+                class="flex-1 break-words"
+                [ngClass]="editable(categoriaId) ? 'cursor-text' : 'cursor-default'"
                 [class.line-through]="task.estado === 'realizado'"
                 [class.text-ink-faint]="task.estado === 'realizado'"
                 [class.text-ink]="task.estado !== 'realizado'"
@@ -308,44 +328,46 @@
                   [title]="task.subtareasHechas + ' de ' + task.subtareasTotal + ' subtareas completas'"
                 >{{ task.subtareasTotal }}</button>
               </span>
-              <div class="hidden md:flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition">
+              <ng-container *ngIf="editable(categoriaId)">
+                <div class="hidden md:flex gap-1 md:opacity-0 md:group-hover:opacity-100 transition">
+                  <button
+                    (click)="moverTareaArriba(task, categoriaId)"
+                    [disabled]="!puedeSubir(task, categoriaId)"
+                    class="p-1 shrink-0 disabled:opacity-30"
+                    title="Mover arriba"
+                  >
+                    <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_upward</span>
+                  </button>
+                  <button
+                    (click)="moverTareaAbajo(task, categoriaId)"
+                    [disabled]="!puedeJajar(task, categoriaId)"
+                    class="p-1 shrink-0 disabled:opacity-30"
+                    title="Mover abajo"
+                  >
+                    <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_downward</span>
+                  </button>
+                </div>
                 <button
-                  (click)="moverTareaArriba(task, categoriaId)"
-                  [disabled]="!puedeSubir(task, categoriaId)"
-                  class="p-1 shrink-0 disabled:opacity-30"
-                  title="Mover arriba"
+                  (click)="abrirMoverTarea(task)"
+                  class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
+                  title="Mover a otro día"
                 >
-                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_upward</span>
+                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
                 </button>
                 <button
-                  (click)="moverTareaAbajo(task, categoriaId)"
-                  [disabled]="!puedeJajar(task, categoriaId)"
-                  class="p-1 shrink-0 disabled:opacity-30"
-                  title="Mover abajo"
+                  (click)="abrirSubtareasModal(task)"
+                  class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
+                  title="Subtareas"
                 >
-                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">arrow_downward</span>
+                  <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">checklist</span>
                 </button>
-              </div>
-              <button
-                (click)="abrirMoverTarea(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
-                title="Mover a otro día"
-              >
-                <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">event</span>
-              </button>
-              <button
-                (click)="abrirSubtareasModal(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
-                title="Subtareas"
-              >
-                <span class="material-icons text-ink-faint hover:text-accent" style="font-size: 16px">checklist</span>
-              </button>
-              <button
-                (click)="eliminarTarea(task)"
-                class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
-              >
-                <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
-              </button>
+                <button
+                  (click)="eliminarTarea(task)"
+                  class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-0.5 md:p-1 shrink-0"
+                >
+                  <span class="material-icons text-ink-faint hover:text-overdue" style="font-size: 16px">close</span>
+                </button>
+              </ng-container>
             </ng-container>
 
             <ng-template #editandoTask2>
@@ -360,8 +382,8 @@
             </ng-template>
           </div>
 
-          <!-- Alta rápida -->
-          <div class="flex items-center gap-3 py-1.5 mt-1">
+          <!-- Alta rápida (no disponible si la categoría está desactivada) -->
+          <div *ngIf="editable(categoriaId)" class="flex items-center gap-3 py-1.5 mt-1">
             <span class="w-5 h-5 flex items-center justify-center shrink-0">
               <span class="material-icons text-ink-faint" style="font-size: 16px">add</span>
             </span>
@@ -468,6 +490,7 @@
 <app-subtasks-modal
   *ngIf="subtasksModalVisible() && selectedTaskForSubtasks()"
   [parentTask]="selectedTaskForSubtasks()!"
+  [readonly]="!editable(selectedTaskForSubtasks()!.categoriaId)"
   [fecha]="selectedDate()"
   (closeModal)="cerrarSubtareasModal()"
 ></app-subtasks-modal>

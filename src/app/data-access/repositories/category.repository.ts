@@ -13,6 +13,7 @@ export abstract class CategoryRepository {
   /** Devuelve el id (push-key) de la categoría creada. */
   abstract create(nombre: string): Observable<string>;
   abstract rename(id: string, nombre: string): Observable<void>;
-  abstract update(id: string, changes: Partial<TaskType>): Observable<void>;
+  /** `desactivadaDesde: null` borra el campo. */
+  abstract update(id: string, changes: Partial<Omit<TaskType, 'desactivadaDesde'>> & { desactivadaDesde?: string | null }): Observable<void>;
   abstract remove(id: string): Observable<void>;
 }

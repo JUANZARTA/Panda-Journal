@@ -42,6 +42,11 @@ export default class RecurringTasksComponent {
   nuevoDias = signal<number[]>(DIAS_SEMANA.map((d) => d.valor));
   editDias = signal<number[]>([]);
 
+  /** Una categoría desactivada no se puede elegir para tareas recurrentes. */
+  categoriaDisponible(categoriaId: string): boolean {
+    return this.taskTypeService.categoriaEditable(this.categories().find((c) => c.id === categoriaId));
+  }
+
   toggleDia(dias: WritableSignal<number[]>, valor: number): void {
     dias.update((actual) =>
       actual.includes(valor) ? actual.filter((d) => d !== valor) : [...actual, valor]
@@ -65,6 +70,7 @@ export default class RecurringTasksComponent {
     const dias = this.nuevoDias();
 
     if (!nombre || !categoriaId || dias.length === 0) return;
+    if (!this.categoriaDisponible(categoriaId)) return;
 
     this.creando.set(true);
     this.recurringTaskService.create(nombre, categoriaId, dias.length === 7 ? undefined : dias).subscribe({
@@ -95,6 +101,9 @@ export default class RecurringTasksComponent {
     const dias = this.editDias();
 
     if (!nombre || !categoriaId || dias.length === 0) return;
+
+    const categoriaOriginal = this.tasks().find((t) => t.id === taskId)?.categoriaId;
+    if (categoriaId !== categoriaOriginal && !this.categoriaDisponible(categoriaId)) return;
 
     this.recurringTaskService.updateNombre(taskId, nombre).subscribe({
       error: (err) => console.error('Error al actualizar nombre:', err),

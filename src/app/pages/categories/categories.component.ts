@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { combineLatest } from 'rxjs';
+import { combineLatest, take } from 'rxjs';
 
 import { TaskTypeService } from '../../services/taskType.service';
 import { TaskService } from '../../services/task.service';
@@ -40,7 +40,13 @@ export default class CategoriesComponent {
     });
   }
 
+  /** Una categoría desactivada queda de solo lectura: solo se puede volver a activar. */
+  esEditable(categoria: TaskType | undefined): boolean {
+    return this.taskTypeService.categoriaEditable(categoria);
+  }
+
   empezarEdicion(categoria: TaskType): void {
+    if (!this.esEditable(categoria)) return;
     this.editandoId = categoria.id;
     this.editandoNombre = categoria.nombre;
   }
@@ -52,6 +58,7 @@ export default class CategoriesComponent {
 
   guardarEdicion(): void {
     if (!this.editandoNombre.trim() || !this.editandoId) return;
+    if (!this.esEditable(this.categorias().find((c) => c.id === this.editandoId))) return;
     this.taskTypeService.editTaskType(this.editandoId, this.editandoNombre).subscribe({
       next: () => this.cancelarEdicion(),
       error: (err) => console.error('[ERROR] Al editar categoría:', err),
@@ -59,10 +66,12 @@ export default class CategoriesComponent {
   }
 
   pedirEliminar(id: string): void {
+    if (!this.esEditable(this.categorias().find((c) => c.id === id))) return;
+    // take(1): lectura puntual — el stream en vivo nunca completa y re-ejecutaría esto ante cualquier cambio de tareas.
     combineLatest([
       this.taskService.watchAllDatedTasks(),
       this.taskService.watchUndatedTasks()
-    ]).subscribe(([tareasDated, tareasUndated]) => {
+    ]).pipe(take(1)).subscribe(([tareasDated, tareasUndated]) => {
       const tienePendientesDated = tareasDated.some((t) => t.categoriaId === id && t.estado !== 'realizado');
       const tienePendientesUndated = tareasUndated.some((t) => t.categoriaId === id && t.estado !== 'realizado');
       const tienePendientes = tienePendientesDated || tienePendientesUndated;
@@ -95,25 +104,15 @@ export default class CategoriesComponent {
     });
   }
 
+  /**
+   * Activa/desactiva la categoría. Al desactivar se guarda la fecha de hoy en desactivadaDesde
+   * (el cuaderno oculta la sección desde ese día y la deja de solo lectura antes); al activar se borra.
+   * No se borra ninguna tarea, así que no hace falta bloquear si hay pendientes.
+   */
   toggleActiva(categoria: TaskType): void {
-    combineLatest([
-      this.taskService.watchAllDatedTasks(),
-      this.taskService.watchUndatedTasks()
-    ]).subscribe(([tareasDated, tareasUndated]) => {
-      const tienePendientesDated = tareasDated.some((t) => t.categoriaId === categoria.id && t.estado !== 'realizado');
-      const tienePendientesUndated = tareasUndated.some((t) => t.categoriaId === categoria.id && t.estado !== 'realizado');
-      const tienePendientes = tienePendientesDated || tienePendientesUndated;
-
-      if (tienePendientes && (categoria.activa ?? true)) {
-        this.errorEliminar = 'No puedes desactivar una categoría con tareas pendientes';
-        setTimeout(() => (this.errorEliminar = ''), 3000);
-        return;
-      }
-
-      const novaActiva = !(categoria.activa ?? true);
-      this.taskTypeService.editTaskType(categoria.id, categoria.nombre, novaActiva).subscribe({
-        error: (err) => console.error('[ERROR] Al cambiar estado de categoría:', err),
-      });
+    const nuevaActiva = !this.esEditable(categoria);
+    this.taskTypeService.setActiva(categoria.id, nuevaActiva).subscribe({
+      error: (err) => console.error('[ERROR] Al cambiar estado de categoría:', err),
     });
   }
 

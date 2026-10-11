@@ -7,4 +7,6 @@ export interface TaskType {
   nombre: string;
   activa?: boolean | "eliminada";
   orden?: number;
+  /** Fecha local (YYYY-MM-DD) en que se desactivó. Solo existe mientras activa === false. */
+  desactivadaDesde?: string;
 }

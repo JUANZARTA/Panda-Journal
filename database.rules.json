@@ -18,6 +18,8 @@
       "categorias": {
         "$categoriaId": {
           "nombre": { ".validate": "newData.isString()" },
+          "activa": { ".validate": "newData.isBoolean()" },
+          "desactivadaDesde": { ".validate": "newData.isString() && newData.val().matches(/^\\d{4}-\\d{2}-\\d{2}$/)" },
           "$other": { ".validate": false }
         }
       },

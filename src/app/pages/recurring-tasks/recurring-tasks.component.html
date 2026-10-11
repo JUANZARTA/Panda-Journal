@@ -24,7 +24,9 @@
         class="px-3 py-2 text-sm border border-paper-line rounded bg-paper text-ink focus:outline-none focus:border-accent"
       >
         <option value="">Selecciona categoría</option>
-        <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.nombre }}</option>
+        <option *ngFor="let cat of categories()" [value]="cat.id" [disabled]="!categoriaDisponible(cat.id)">
+          {{ cat.nombre }}{{ categoriaDisponible(cat.id) ? '' : ' (desactivada)' }}
+        </option>
       </select>
       <button
         (click)="agregarTarea()"
@@ -57,7 +59,9 @@
       <ng-container *ngIf="editando() !== task.id; else editandoTpl">
         <div class="flex-1 min-w-0">
           <p class="text-ink truncate">{{ task.nombre }}</p>
-          <p class="text-xs text-ink-faint truncate">{{ getNombreCategoria(task.categoriaId) }}</p>
+          <p class="text-xs text-ink-faint truncate">
+            {{ getNombreCategoria(task.categoriaId) }}{{ categoriaDisponible(task.categoriaId) ? '' : ' (desactivada: no se generan tareas)' }}
+          </p>
           <p class="text-xs text-ink-faint truncate">{{ resumenDias(task.dias) }}</p>
         </div>
 
@@ -99,7 +103,9 @@
           [(ngModel)]="editCategoria"
           class="bg-transparent border-b border-paper-line focus:border-accent text-sm text-ink-soft focus:outline-none py-1"
         >
-          <option *ngFor="let cat of categories()" [value]="cat.id">{{ cat.nombre }}</option>
+          <option *ngFor="let cat of categories()" [value]="cat.id" [disabled]="!categoriaDisponible(cat.id)">
+          {{ cat.nombre }}{{ categoriaDisponible(cat.id) ? '' : ' (desactivada)' }}
+        </option>
         </select>
         <button (click)="guardarEdicion(task.id)" class="p-1.5 rounded hover:bg-accent-soft/60 transition" title="Guardar">
           <span class="material-icons text-base text-done">check</span>

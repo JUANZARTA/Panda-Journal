@@ -10,6 +10,7 @@ import { watchValue } from '../watch-value';
 interface RawCategory {
   nombre: string;
   activa?: boolean;
+  desactivadaDesde?: string;
 }
 
 @Injectable()
@@ -50,6 +51,8 @@ export class FirebaseCategoryRepository extends CategoryRepository {
     const updatePayload: any = {};
     if (changes['nombre'] !== undefined) updatePayload['nombre'] = changes['nombre'].trim();
     if (changes['activa'] !== undefined) updatePayload['activa'] = changes['activa'];
+    // null en RTDB borra el campo (se usa al reactivar la categoría)
+    if (changes['desactivadaDesde'] !== undefined) updatePayload['desactivadaDesde'] = changes['desactivadaDesde'] ?? null;
 
     return from(dbUpdate(ref(this.db, `${path}/${id}`), updatePayload));
   }
@@ -64,5 +67,10 @@ export class FirebaseCategoryRepository extends CategoryRepository {
 
 function flattenCategories(categorias: Record<string, RawCategory> | null): TaskType[] {
   if (!categorias) return [];
-  return Object.entries(categorias).map(([id, categoria]) => ({ id, nombre: categoria.nombre, activa: categoria.activa ?? true }));
+  return Object.entries(categorias).map(([id, categoria]) => ({
+    id,
+    nombre: categoria.nombre,
+    activa: categoria.activa ?? true,
+    ...(categoria.desactivadaDesde ? { desactivadaDesde: categoria.desactivadaDesde } : {}),
+  }));
 }

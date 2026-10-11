@@ -51,23 +51,31 @@ export default class OtrasTareasComponent {
     return this.tareasPorCategoria().get(categoriaId) ?? [];
   }
 
+  /** Las tareas de una categoría desactivada se ven pero no se pueden tocar. */
+  editable(categoriaId: string): boolean {
+    return this.taskTypeService.categoriaEditable(this.categorias().find((c) => c.id === categoriaId));
+  }
+
   toggleTask(task: Task): void {
+    if (!this.editable(task.categoriaId)) return;
     this.taskService.toggleUndatedEstado(task).subscribe();
   }
 
   agregarTarea(categoriaId: string): void {
     const texto = (this.nuevoTaskTexto[categoriaId] || '').trim();
-    if (!texto) return;
+    if (!texto || !this.editable(categoriaId)) return;
 
     this.taskService.addUndatedTask({ nombre: texto, categoriaId, estado: 'pendiente' }).subscribe();
     this.nuevoTaskTexto[categoriaId] = '';
   }
 
   eliminarTarea(task: Task): void {
+    if (!this.editable(task.categoriaId)) return;
     this.taskService.removeUndatedTask(task.id).subscribe();
   }
 
   abrirAsignarFecha(task: Task): void {
+    if (!this.editable(task.categoriaId)) return;
     this.asignandoFechaId = task.id;
     this.fechaElegida = '';
   }
@@ -78,7 +86,7 @@ export default class OtrasTareasComponent {
   }
 
   confirmarAsignarFecha(task: Task): void {
-    if (!this.fechaElegida) return;
+    if (!this.fechaElegida || !this.editable(task.categoriaId)) return;
     this.taskService.assignDate(task, this.fechaElegida).subscribe({
       next: () => this.cancelarAsignarFecha(),
       error: (err) => console.error('[ERROR] Al asignar fecha:', err),
@@ -86,12 +94,13 @@ export default class OtrasTareasComponent {
   }
 
   empezarEdicion(task: Task): void {
+    if (!this.editable(task.categoriaId)) return;
     this.editandoId = task.id;
     this.editandoNombre = task.nombre;
   }
 
   guardarEdicion(task: Task): void {
-    if (!this.editandoNombre.trim()) return;
+    if (!this.editandoNombre.trim() || !this.editable(task.categoriaId)) return;
     this.taskService.updateUndatedTask(task.id, this.editandoNombre).subscribe({
       next: () => this.cancelarEdicion(),
       error: (err) => console.error('[ERROR] Al actualizar tarea:', err),

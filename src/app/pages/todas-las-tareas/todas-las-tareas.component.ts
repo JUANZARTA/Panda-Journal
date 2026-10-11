@@ -207,7 +207,13 @@ export default class TodasLasTareasComponent {
     return origen === 'cuaderno' ? 'Cuaderno' : origen === 'otras' ? 'Otras tareas' : 'Perdida';
   }
 
+  /** Las tareas de una categoría desactivada se ven pero no se pueden tocar. */
+  editable(categoriaId: string): boolean {
+    return this.taskTypeService.categoriaEditable(this.categorias().find((c) => c.id === categoriaId));
+  }
+
   toggle(fila: Fila): void {
+    if (!this.editable(fila.task.categoriaId)) return;
     switch (fila.origen) {
       case 'cuaderno':
         this.taskService.toggleEstadoOnDate(fila.task, fila.fecha as string).subscribe();
@@ -222,6 +228,7 @@ export default class TodasLasTareasComponent {
   }
 
   eliminar(fila: Fila): void {
+    if (!this.editable(fila.task.categoriaId)) return;
     switch (fila.origen) {
       case 'cuaderno':
         this.taskService.removeTaskOnDate(fila.fecha as string, fila.task.id).subscribe();
@@ -236,6 +243,7 @@ export default class TodasLasTareasComponent {
   }
 
   abrirReasignar(fila: Fila): void {
+    if (!this.editable(fila.task.categoriaId)) return;
     this.reasignandoId = this.trackByFila(0, fila);
     this.fechaNueva = fila.fecha ?? '';
   }
@@ -246,7 +254,7 @@ export default class TodasLasTareasComponent {
   }
 
   confirmarReasignar(fila: Fila): void {
-    if (!this.fechaNueva) return;
+    if (!this.fechaNueva || !this.editable(fila.task.categoriaId)) return;
 
     const obs =
       fila.origen === 'cuaderno'
@@ -330,12 +338,13 @@ export default class TodasLasTareasComponent {
   }
 
   empezarEdicion(task: Task, origen: Origen): void {
+    if (!this.editable(task.categoriaId)) return;
     this.editandoId = task.id;
     this.editandoNombre = task.nombre;
   }
 
   guardarEdicion(task: Task, origen: Origen): void {
-    if (!this.editandoNombre.trim()) return;
+    if (!this.editandoNombre.trim() || !this.editable(task.categoriaId)) return;
 
     if (origen === 'cuaderno') {
       this.taskService.updateTask(task.id, { nombre: this.editandoNombre }).subscribe({

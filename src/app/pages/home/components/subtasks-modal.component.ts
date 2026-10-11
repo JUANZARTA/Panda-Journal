@@ -15,6 +15,8 @@ import { delay } from 'rxjs';
 export class SubtasksModalComponent {
   parentTask = input.required<Task>();
   fecha = input.required<string>();
+  /** Solo lectura: categoría desactivada. No se puede agregar, editar, tildar, mover ni borrar. */
+  readonly = input(false);
   closeModal = output<void>();
 
   private taskService = inject(TaskService);
@@ -43,6 +45,7 @@ export class SubtasksModalComponent {
   }
 
   agregarSubtarea(): void {
+    if (this.readonly()) return;
     const nombre = this.nuevoTexto().trim();
     if (!nombre) return;
 
@@ -57,11 +60,13 @@ export class SubtasksModalComponent {
   }
 
   empezarEdicion(subtask: Task): void {
+    if (this.readonly()) return;
     this.editandoId.set(subtask.id);
     this.editandoNombre.set(subtask.nombre);
   }
 
   guardarEdicion(subtask: Task): void {
+    if (this.readonly()) return;
     const nombre = this.editandoNombre().trim();
     if (!nombre) return;
 
@@ -76,18 +81,21 @@ export class SubtasksModalComponent {
   }
 
   eliminarSubtarea(subtask: Task): void {
+    if (this.readonly()) return;
     this.taskService.deleteSubtask(this.parentTask().id, subtask.id, this.fecha()).subscribe(() => {
       this.loadSubtasks();
     });
   }
 
   toggleCompleta(subtask: Task): void {
+    if (this.readonly()) return;
     this.taskService.toggleSubtaskComplete(this.parentTask().id, subtask.id, this.fecha(), subtask.estado).subscribe(() => {
       this.loadSubtasks();
     });
   }
 
   moverArriba(subtask: Task): void {
+    if (this.readonly()) return;
     const subs = this.subtasks();
     const idx = subs.findIndex((s) => s.id === subtask.id);
     if (idx <= 0) return;
@@ -108,6 +116,7 @@ export class SubtasksModalComponent {
   }
 
   moverAbajo(subtask: Task): void {
+    if (this.readonly()) return;
     const subs = this.subtasks();
     const idx = subs.findIndex((s) => s.id === subtask.id);
     if (idx >= subs.length - 1) return;
@@ -142,6 +151,7 @@ export class SubtasksModalComponent {
   }
 
   marcarTodasCompletas(): void {
+    if (this.readonly()) return;
     const subs = this.subtasks();
     subs.forEach((subtask) => {
       if (subtask.estado !== 'realizado') {
@@ -166,7 +176,7 @@ export class SubtasksModalComponent {
   }
 
   onCerrar(): void {
-    this.verificarYCompletarPadre();
+    if (!this.readonly()) this.verificarYCompletarPadre();
     this.closeModal.emit();
   }
 

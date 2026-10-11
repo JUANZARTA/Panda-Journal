@@ -7,13 +7,17 @@
       <div class="flex items-center gap-2">
         <button
           (click)="marcarTodasCompletas()"
-          *ngIf="subtasks().length > 0 && !todasCompletas()"
+          *ngIf="!readonly() && subtasks().length > 0 && !todasCompletas()"
           class="text-accent hover:text-accent/80 transition flex-shrink-0"
           title="Marcar todas como completas"
         >
           <span class="material-icons" style="font-size: 18px">done_all</span>
         </button>
         <h2 class="font-hand text-2xl text-accent">Subtareas</h2>
+        <span *ngIf="readonly()" class="inline-flex items-center gap-1 text-xs text-ink-faint">
+          <span class="material-icons" style="font-size: 14px">visibility_off</span>
+          Desactivada
+        </span>
       </div>
       <button (click)="onCerrar()" class="text-ink-faint hover:text-ink flex-shrink-0">
         <span class="material-icons">close</span>
@@ -27,7 +31,8 @@
       <div *ngFor="let sub of subtasks()" class="flex items-start gap-3 py-2 group">
         <button
           (click)="toggleCompleta(sub)"
-          class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
+          [disabled]="readonly()"
+          class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition disabled:cursor-not-allowed"
           [ngClass]="sub.estado === 'realizado' ? 'bg-done border-done' : 'border-ink-faint'"
         >
           <span *ngIf="sub.estado === 'realizado'" class="material-icons text-white" style="font-size: 14px">
@@ -38,14 +43,15 @@
         <ng-container *ngIf="editandoId() !== sub.id; else editando">
           <span
             (click)="empezarEdicion(sub)"
-            class="flex-1 cursor-text text-sm break-words"
+            class="flex-1 text-sm break-words"
+            [ngClass]="readonly() ? 'cursor-default' : 'cursor-text'"
             [class.line-through]="sub.estado === 'realizado'"
             [class.text-ink-faint]="sub.estado === 'realizado'"
             [class.text-ink]="sub.estado !== 'realizado'"
           >
             {{ sub.nombre }}
           </span>
-          <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition">
+          <div *ngIf="!readonly()" class="flex gap-1 opacity-0 group-hover:opacity-100 transition">
             <button
               (click)="moverArriba(sub)"
               [disabled]="!puedeSubir(sub)"
@@ -86,7 +92,7 @@
     </div>
 
     <!-- Agregar subtarea -->
-    <div class="flex items-center gap-3 py-2 border-t border-paper-line pt-4 mb-4">
+    <div *ngIf="!readonly()" class="flex items-center gap-3 py-2 border-t border-paper-line pt-4 mb-4">
       <span class="w-5 h-5 flex items-center justify-center shrink-0">
         <span class="material-icons text-ink-faint" style="font-size: 16px">add</span>
       </span>

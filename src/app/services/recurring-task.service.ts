@@ -5,12 +5,14 @@ import { RecurringTaskRepository } from '../data-access/repositories/recurring-t
 import { TaskRepository } from '../data-access/repositories/task.repository';
 import { RecurringTask } from '../models/recurring-task.model';
 import { DateService, formatDate } from './date.service';
+import { TaskTypeService } from './taskType.service';
 
 @Injectable({ providedIn: 'root' })
 export class RecurringTaskService {
   private recurringRepo = inject(RecurringTaskRepository);
   private taskRepo = inject(TaskRepository);
   private dateService = inject(DateService);
+  private taskTypeService = inject(TaskTypeService);
 
   getAll(): Observable<RecurringTask[]> {
     return this.recurringRepo.getAll();
@@ -69,6 +71,17 @@ export class RecurringTaskService {
     return this.recurringRepo.getActive().pipe(
       take(1),
       map((all) => all.filter((t) => !t.dias?.length || t.dias.includes(todayDow))),
+      // No se generan tareas de categorías desactivadas (mientras lo estén)
+      switchMap((recurring) =>
+        this.taskTypeService.getAllTaskTypes().pipe(
+          take(1),
+          map((categorias) =>
+            recurring.filter((r) =>
+              this.taskTypeService.categoriaEditable(categorias.find((c) => c.id === r.categoriaId))
+            )
+          )
+        )
+      ),
       switchMap((recurringTasks) => {
         if (recurringTasks.length === 0) return from([undefined]);
 

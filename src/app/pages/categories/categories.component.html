@@ -51,26 +51,33 @@
         class="flex items-center gap-3 py-2.5 border-b border-paper-line last:border-0"
       >
       <ng-container *ngIf="editandoId !== categoria.id; else editando">
-        <span class="flex-1 text-ink">{{ categoria.nombre }}</span>
-        <!-- TODO: Implementar activar/desactivar categoría
-             Lógica: Si una categoría está inactiva, no permitir crear nuevas tareas a partir del día siguiente de la última tarea creada en esa categoría.
-             Por ahora, este botón está comentado y no se muestra en el frontend.
-        -->
-        <!-- <button
-          (click)="toggleActiva(categoria)"
-          class="p-1.5 rounded hover:bg-accent-soft/60 transition"
-          [title]="categoria.activa ? 'Inactivar categoría' : 'Activar categoría'"
-        >
-          <span class="material-icons text-base" [class.text-accent]="categoria.activa" [class.text-ink-faint]="!categoria.activa">
-            {{ categoria.activa ? 'visibility' : 'visibility_off' }}
+        <span class="flex-1 text-ink" [ngClass]="{ 'opacity-60': !esEditable(categoria) }">
+          {{ categoria.nombre }}
+          <span
+            *ngIf="!esEditable(categoria)"
+            class="ml-2 inline-flex items-center gap-1 text-xs text-ink-faint align-middle"
+            [title]="'Desactivada desde ' + (categoria.desactivadaDesde || '—')"
+          >
+            <span class="material-icons" style="font-size: 14px">visibility_off</span>
+            Desactivada
           </span>
-        </button> -->
-        <button (click)="empezarEdicion(categoria)" class="p-1.5 rounded hover:bg-accent-soft/60 transition">
+        </span>
+        <label class="flex items-center cursor-pointer" [title]="esEditable(categoria) ? 'Desactivar' : 'Activar'">
+          <input type="checkbox" [checked]="esEditable(categoria)" (change)="toggleActiva(categoria)" class="toggle-checkbox" />
+          <span class="toggle-slider"></span>
+        </label>
+        <button
+          (click)="empezarEdicion(categoria)"
+          [disabled]="!esEditable(categoria)"
+          class="p-1.5 rounded hover:bg-accent-soft/60 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+          title="Renombrar categoría"
+        >
           <span class="material-icons text-base text-ink-soft">edit</span>
         </button>
         <button
           (click)="pedirEliminar(categoria.id)"
-          class="p-1.5 rounded hover:bg-overdue/10 transition"
+          [disabled]="!esEditable(categoria)"
+          class="p-1.5 rounded hover:bg-overdue/10 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           title="Eliminar categoría"
         >
           <span class="material-icons text-base text-overdue">delete</span>

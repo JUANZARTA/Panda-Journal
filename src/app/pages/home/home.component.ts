@@ -56,9 +56,28 @@ export default class HomeComponent {
   subtasksModalVisible = signal(false);
   selectedTaskForSubtasks = signal<Task | undefined>(undefined);
 
+  /**
+   * Categorías que aparecen en el cuaderno del día seleccionado. Una desactivada se oculta
+   * desde su fecha de desactivación y se muestra (solo lectura) en los días anteriores.
+   */
+  categoriasVisibles = computed(() => {
+    const fecha = this.selectedDate();
+    return this.categorias().filter((c) => this.taskTypeService.categoriaVisibleEnCuaderno(c, fecha));
+  });
+
+  /** Tareas del día sin las de categorías ocultas (para no contarlas en el progreso ni en el reparto de páginas). */
+  private tareasVisibles = computed(() => {
+    const ocultas = new Set(
+      this.categorias()
+        .filter((c) => !this.categoriasVisibles().includes(c))
+        .map((c) => c.id)
+    );
+    return this.tareas().filter((t) => !ocultas.has(t.categoriaId));
+  });
+
   tareasPorCategoria = computed(() => {
     const map = new Map<string, Task[]>();
-    this.tareas().forEach((t) => {
+    this.tareasVisibles().forEach((t) => {
       const lista = map.get(t.categoriaId) ?? [];
       lista.push(t);
       map.set(t.categoriaId, lista);
@@ -66,13 +85,13 @@ export default class HomeComponent {
     return map;
   });
 
-  hayTareasHoy = computed(() => this.tareas().length > 0);
+  hayTareasHoy = computed(() => this.tareasVisibles().length > 0);
 
   /** Divide categorías en izquierda y derecha para layout de cuaderno abierto */
   categoriasPartidas = computed(() => {
-    const cats = this.categorias();
+    const cats = this.categoriasVisibles();
     const tareasMap = this.tareasPorCategoria();
-    const totalTareas = this.tareas().length;
+    const totalTareas = this.tareasVisibles().length;
 
     if (totalTareas === 0) {
       // Sin tareas: dividir categorías en dos mitades
@@ -102,9 +121,9 @@ export default class HomeComponent {
 
   /** % de tareas completadas del día que se está viendo — 0 si no hay ninguna cargada. */
   progresoDia = computed(() => {
-    const total = this.tareas().length;
+    const total = this.tareasVisibles().length;
     if (total === 0) return 0;
-    const hechas = this.tareas().filter((t) => t.estado === 'realizado').length;
+    const hechas = this.tareasVisibles().filter((t) => t.estado === 'realizado').length;
     return Math.round((hechas / total) * 100);
   });
 
@@ -134,7 +153,13 @@ export default class HomeComponent {
     return this.categorias().find((c) => c.id === categoriaId)?.nombre ?? '';
   }
 
+  /** Las categorías desactivadas se muestran en días pasados, pero en solo lectura. */
+  editable(categoriaId: string): boolean {
+    return this.taskTypeService.categoriaEditable(this.categorias().find((c) => c.id === categoriaId));
+  }
+
   toggleTask(task: Task): void {
+    if (!this.editable(task.categoriaId)) return;
     const nuevoEstado = task.estado === 'realizado' ? 'pendiente' : 'realizado';
     this.taskService.toggleEstado(task).subscribe(() => {
       // Si la tarea tiene subtareas, marcar/desmarcar todas
@@ -144,17 +169,19 @@ export default class HomeComponent {
 
   agregarTarea(categoriaId: string): void {
     const texto = (this.nuevoTaskTexto[categoriaId] || '').trim();
-    if (!texto) return;
+    if (!texto || !this.editable(categoriaId)) return;
 
     this.taskService.addTask({ nombre: texto, categoriaId, estado: 'pendiente' }).subscribe();
     this.nuevoTaskTexto[categoriaId] = '';
   }
 
   eliminarTarea(task: Task): void {
+    if (!this.editable(task.categoriaId)) return;
     this.taskService.removeTask(task.id).subscribe();
   }
 
   empezarEdicionTask(task: Task): void {
+    if (!this.editable(task.categoriaId)) return;
     this.editandoTaskId = task.id;
     this.editandoTaskNombre = task.nombre;
   }
@@ -166,7 +193,7 @@ export default class HomeComponent {
 
   guardarEdicionTask(task: Task): void {
     const nombre = this.editandoTaskNombre.trim();
-    if (!nombre) {
+    if (!nombre || !this.editable(task.categoriaId)) {
       this.cancelarEdicionTask();
       return;
     }
@@ -192,6 +219,7 @@ export default class HomeComponent {
   }
 
   abrirMoverTarea(task: Task): void {
+    if (!this.editable(task.categoriaId)) return;
     this.tareaAMover.set(task);
     this.fechaMoverString = this.selectedDate();
   }
@@ -220,7 +248,7 @@ export default class HomeComponent {
 
   confirmarMover(): void {
     const task = this.tareaAMover();
-    if (!task) return;
+    if (!task || !this.editable(task.categoriaId)) return;
 
     this.taskService.moveTaskToDate(task, this.selectedDate(), this.fechaMoverString).subscribe(() => {
       this.cancelarMover();
@@ -240,6 +268,7 @@ export default class HomeComponent {
   }
 
   moverTareaArriba(task: Task, categoriaId: string): void {
+    if (!this.editable(categoriaId)) return;
     const tareas = this.tareasDe(categoriaId);
     const index = tareas.findIndex((t) => t.id === task.id);
     if (index <= 0) return;
@@ -259,6 +288,7 @@ export default class HomeComponent {
   }
 
   moverTareaAbajo(task: Task, categoriaId: string): void {
+    if (!this.editable(categoriaId)) return;
     const tareas = this.tareasDe(categoriaId);
     const index = tareas.findIndex((t) => t.id === task.id);
     if (index >= tareas.length - 1) return;

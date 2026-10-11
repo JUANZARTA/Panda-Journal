@@ -8,15 +8,23 @@
     <ng-container *ngIf="hayTareas(); else sinPerdidas">
       <section *ngFor="let categoria of categorias(); trackBy: trackById" class="mb-8 last:mb-0">
         <ng-container *ngIf="tareasDe(categoria.id).length > 0">
-          <h2 class="font-hand text-2xl text-accent mb-3">{{ categoria.nombre }}</h2>
+          <h2 class="font-hand text-2xl text-accent mb-3" [ngClass]="{ 'opacity-60': !editable(categoria.id) }">
+            {{ categoria.nombre }}
+            <span *ngIf="!editable(categoria.id)" class="ml-2 inline-flex items-center gap-1 font-sans text-xs text-ink-faint align-middle">
+              <span class="material-icons" style="font-size: 14px">visibility_off</span>
+              Desactivada
+            </span>
+          </h2>
 
           <div
             *ngFor="let task of tareasDe(categoria.id); trackBy: trackByTaskId"
             class="flex flex-wrap items-start gap-3 py-1.5 group"
+            [ngClass]="{ 'opacity-60': !editable(categoria.id) }"
           >
             <button
               (click)="toggleTask(task)"
-              class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition"
+              [disabled]="!editable(categoria.id)"
+              class="mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition disabled:cursor-not-allowed"
               [ngClass]="task.estado === 'realizado' ? 'bg-done border-done' : 'border-overdue'"
             >
               <span *ngIf="task.estado === 'realizado'" class="material-icons text-white" style="font-size: 14px">
@@ -38,7 +46,7 @@
               </span>
             </div>
 
-            <ng-container *ngIf="asignandoFechaId !== task.id; else eligiendoFecha">
+            <ng-container *ngIf="editable(categoria.id) && asignandoFechaId !== task.id; else eligiendoFecha">
               <button
                 (click)="abrirAsignarFecha(task)"
                 class="opacity-70 md:opacity-0 md:group-hover:opacity-100 transition p-1 shrink-0"
@@ -55,7 +63,7 @@
             </ng-container>
 
             <ng-template #eligiendoFecha>
-              <div class="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
+              <div *ngIf="editable(categoria.id)" class="flex items-center gap-2 w-full sm:w-auto mt-1 sm:mt-0">
                 <input
                   type="date"
                   [(ngModel)]="fechaElegida"

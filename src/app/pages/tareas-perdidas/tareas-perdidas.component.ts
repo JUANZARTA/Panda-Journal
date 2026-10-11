@@ -53,15 +53,23 @@ export default class TareasPerdidasComponent {
     return this.categorias().find((c) => c.id === categoriaId)?.nombre ?? 'Sin categoría';
   }
 
+  /** Las tareas de una categoría desactivada se ven pero no se pueden tocar. */
+  editable(categoriaId: string): boolean {
+    return this.taskTypeService.categoriaEditable(this.categorias().find((c) => c.id === categoriaId));
+  }
+
   toggleTask(task: Task): void {
+    if (!this.editable(task.categoriaId)) return;
     this.taskService.toggleLostEstado(task).subscribe();
   }
 
   eliminarTarea(task: Task): void {
+    if (!this.editable(task.categoriaId)) return;
     this.taskService.removeLostTask(task.id).subscribe();
   }
 
   abrirAsignarFecha(task: Task): void {
+    if (!this.editable(task.categoriaId)) return;
     this.asignandoFechaId = task.id;
     this.fechaElegida = '';
   }
@@ -72,7 +80,7 @@ export default class TareasPerdidasComponent {
   }
 
   confirmarAsignarFecha(task: Task): void {
-    if (!this.fechaElegida) return;
+    if (!this.fechaElegida || !this.editable(task.categoriaId)) return;
     this.taskService.reassignLost(task, this.fechaElegida).subscribe({
       next: () => this.cancelarAsignarFecha(),
       error: (err) => console.error('[ERROR] Al reasignar fecha:', err),
