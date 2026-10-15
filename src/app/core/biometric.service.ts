@@ -143,14 +143,14 @@ export class BiometricService {
     const name = (err as { name?: string })?.name;
     switch (name) {
       case 'NotAllowedError':
-        return 'Se canceló la verificación. Probá de nuevo.';
+        return 'Se canceló la verificación. Prueba de nuevo.';
       case 'InvalidStateError':
-        return 'Este dispositivo ya tiene una huella registrada para la app. Desactivala y volvé a activarla.';
+        return 'Este dispositivo ya tiene una huella registrada para la app. Desactívala y vuelve a activarla.';
       case 'NotSupportedError':
       case 'SecurityError':
         return 'Este dispositivo o navegador no soporta el desbloqueo con huella.';
       default:
-        return 'No se pudo completar la verificación. Intentá otra vez.';
+        return 'No se pudo completar la verificación. Intenta otra vez.';
     }
   }
 }

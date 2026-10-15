@@ -10,7 +10,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '2.3.0',
     fecha: '10/10/2026',
     cambios: [
-      'Trabajo sin conexión: si se corta internet, seguís usando la app y tus cambios se guardan al volver la conexión.',
+      'Trabajo sin conexión: si se corta internet, sigues usando la app y tus cambios se guardan al volver la conexión.',
       'Aviso de "Sin conexión" mientras no hay internet.',
       'Buscador en Todas las tareas, sin importar mayúsculas ni tildes.',
       'Filtros de Todas las tareas reorganizados por origen, estado, categorías y fechas.',
@@ -20,7 +20,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '2.2.9',
     fecha: '10/10/2026',
     cambios: [
-      'Tareas recurrentes por día de la semana: elegí en qué días se crean.',
+      'Tareas recurrentes por día de la semana: elige en qué días se crean.',
       'Nota del día: un post-it en el cuaderno para escribir cómo te fue.',
       'Estadísticas: racha actual, mejor racha, resumen semanal y gráfico de tareas hechas por día.',
       'Historial de tareas perdidas: el registro se conserva aunque las reprogrames.',
@@ -33,7 +33,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     cambios: [
       'Nueva sección Configuración: modo claro/oscuro, color, huella y tareas recurrentes en un solo lugar.',
       'Notas de versión dentro de Configuración.',
-      'El cuadrito de una tarea se va llenando a medida que completás sus subtareas.',
+      'El cuadrito de una tarea se va llenando a medida que completas sus subtareas.',
     ],
   },
   {
@@ -80,7 +80,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     fecha: '18/09/2026',
     cambios: [
       'Tareas recurrentes: se generan solas cada día.',
-      'Podés editar las tareas directamente en Otras tareas y Todas las tareas.',
+      'Puedes editar las tareas directamente en Otras tareas y Todas las tareas.',
       'Si tu sesión deja de ser válida, la app te saca sola en vez de quedarse trabada.',
     ],
   },

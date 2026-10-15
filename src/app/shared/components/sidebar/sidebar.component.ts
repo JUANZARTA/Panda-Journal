@@ -153,7 +153,7 @@ export class SidebarComponent implements OnInit {
       for (const categoriaId in pendientesPorCategoria) {
         const nombre = nombrePorCategoriaId.get(categoriaId) ?? 'sin categoría';
         this.notificacionService.add(
-          `Tenés ${pendientesPorCategoria[categoriaId]} tareas pendientes hoy en "${nombre}".`
+          `Tienes ${pendientesPorCategoria[categoriaId]} tareas pendientes hoy en "${nombre}".`
         );
       }
 
