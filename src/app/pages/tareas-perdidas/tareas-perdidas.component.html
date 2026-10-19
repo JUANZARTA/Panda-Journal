@@ -1,7 +1,16 @@
 <div class="max-w-2xl lg:max-w-4xl mx-auto px-4 md:px-0 py-6 md:py-12">
   <div class="text-center mb-6">
     <p class="font-hand text-4xl md:text-5xl text-ink">Tareas perdidas</p>
-    <p class="text-xs text-ink-faint mt-1">Días que ya pasaron sin terminar — marcalas o movelas a un día nuevo.</p>
+    <p class="text-xs text-ink-faint mt-1">Días que ya pasaron sin terminar — márcalas o muévelas a un día nuevo.</p>
+    <button
+      *ngIf="pendientesMovibles().length > 0"
+      (click)="asignarTodasHoy()"
+      [disabled]="moviendoTodas"
+      class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-white text-sm font-medium shadow-sm hover:opacity-90 transition disabled:opacity-50 disabled:cursor-wait"
+    >
+      <span class="material-icons" style="font-size: 18px">today</span>
+      {{ moviendoTodas ? 'Moviendo…' : 'Mover todas a hoy (' + pendientesMovibles().length + ')' }}
+    </button>
   </div>
 
   <div class="notebook-page rounded-lg shadow-page px-5 md:px-10 py-8">

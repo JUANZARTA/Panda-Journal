@@ -2,11 +2,13 @@ import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { forkJoin } from 'rxjs';
 
 import { TaskTypeService } from '../../services/taskType.service';
 import { TaskService } from '../../services/task.service';
 import { TaskType } from '../../models/taskType.model';
 import { Task } from '../../models/task.model';
+import { formatDate } from '../../services/date.service';
 
 @Component({
   selector: 'app-tareas-perdidas',
@@ -77,6 +79,27 @@ export default class TareasPerdidasComponent {
   cancelarAsignarFecha(): void {
     this.asignandoFechaId = '';
     this.fechaElegida = '';
+  }
+
+  /** Pendientes que se pueden mover (excluye realizadas y categorías desactivadas). */
+  pendientesMovibles = computed(() =>
+    this.tareas().filter((t) => t.estado !== 'realizado' && this.editable(t.categoriaId))
+  );
+
+  moviendoTodas = false;
+
+  asignarTodasHoy(): void {
+    const tareas = this.pendientesMovibles();
+    if (tareas.length === 0 || this.moviendoTodas) return;
+    this.moviendoTodas = true;
+    const hoy = formatDate(new Date());
+    forkJoin(tareas.map((t) => this.taskService.reassignLost(t, hoy))).subscribe({
+      next: () => (this.moviendoTodas = false),
+      error: (err) => {
+        this.moviendoTodas = false;
+        console.error('[ERROR] Al mover todas a hoy:', err);
+      },
+    });
   }
 
   confirmarAsignarFecha(task: Task): void {
