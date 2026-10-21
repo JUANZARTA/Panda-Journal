@@ -7,6 +7,7 @@ import { BiometricService } from '../../core/biometric.service';
 import { AuthService } from '../../services/auth.service';
 import { CHANGELOG, ChangelogEntry } from '../../core/changelog';
 import { APP_VERSION } from '../../core/version';
+import { TUTORIAL_URL } from '../../core/links';
 
 @Component({
   selector: 'app-settings',
@@ -23,6 +24,7 @@ export default class SettingsComponent implements OnInit {
   themes = ACCENT_THEMES;
   changelog = CHANGELOG;
   version = APP_VERSION;
+  tutorialUrl = TUTORIAL_URL;
 
   biometricSupported = signal(false);
   biometricBusy = signal(false);

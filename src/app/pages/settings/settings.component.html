@@ -65,6 +65,29 @@
     </a>
   </div>
 
+  <!-- Ayuda -->
+  <h2 class="text-xs font-semibold uppercase tracking-wide text-ink-faint mb-2">Ayuda</h2>
+  <div class="notebook-page rounded-lg shadow-page px-5 py-2 mb-8">
+    <a
+      *ngIf="tutorialUrl; else tutorialPronto"
+      [href]="tutorialUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="flex items-center gap-3 py-2.5"
+    >
+      <span class="material-icons text-base text-accent">play_circle</span>
+      <span class="flex-1 text-ink">Ver tutorial</span>
+      <span class="material-icons text-base text-ink-faint">open_in_new</span>
+    </a>
+    <ng-template #tutorialPronto>
+      <div class="flex items-center gap-3 py-2.5 opacity-60 cursor-not-allowed">
+        <span class="material-icons text-base text-ink-soft">play_circle</span>
+        <span class="flex-1 text-ink">Ver tutorial</span>
+        <span class="text-xs text-ink-faint">Próximamente</span>
+      </div>
+    </ng-template>
+  </div>
+
   <!-- Notas de versión -->
   <h2 class="text-xs font-semibold uppercase tracking-wide text-ink-faint mb-2">Notas de versión</h2>
   <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
